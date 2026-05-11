@@ -1,0 +1,2003 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="KPC Blenden">
+<meta name="theme-color" content="#2d2926">
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="manifest" href="manifest.json">
+<title>KPC Blenden-Kalkulator</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@300;400;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --kpc:#2d2926;--warm:#6b5040;--gold:#c4a46b;--glt:#f0e5d0;
+  --bg:#f0ebe3;--card:#fff;--surf:#f8f4ef;--bd:#ddd5c8;--bd2:#c8bbb0;
+  --tx:#2d2926;--mu:#8a7d72;--hl:#fff9ed;
+  --grn:#256641;--grn-bg:#e8f5ee;
+  --mono:'DM Mono',monospace;--sans:'Roboto Condensed',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{overscroll-behavior:none}
+body{font-family:var(--sans);background:var(--bg);color:var(--tx);min-height:100vh;
+  padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
+
+/* ── HEADER ── */
+.hdr{background:var(--kpc);padding:0 14px;display:flex;align-items:center;gap:10px;height:54px;
+  box-shadow:0 2px 10px rgba(0,0,0,.3);position:sticky;top:0;z-index:200}
+.logo{display:grid;grid-template-columns:1fr 1fr;gap:2px;width:34px;height:24px;flex-shrink:0}
+.logo span{background:var(--gold);display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:10px;color:var(--kpc)}
+.logo span:nth-child(even){background:#c0a070}
+.hdr-t{flex:1;min-width:0}
+.hdr-t h1{font-size:15px;font-weight:700;color:#fff}
+.hdr-t p{font-size:9px;color:var(--gold);text-transform:uppercase;letter-spacing:.8px}
+.hbtn{background:transparent;border:1px solid rgba(255,255,255,.25);color:rgba(255,255,255,.85);
+  padding:5px 10px;border-radius:4px;cursor:pointer;font-family:var(--sans);font-size:11px;font-weight:600}
+.hbtn:active{background:rgba(255,255,255,.1)}
+.badge-btn{position:relative}
+.badge-num{position:absolute;top:-6px;right:-6px;background:var(--gold);color:var(--kpc);
+  border-radius:10px;padding:1px 5px;font-size:10px;font-weight:700;display:none}
+
+/* ── SETTINGS PANEL ── */
+.spanel{background:#2a201a;border-bottom:2px solid var(--gold);padding:14px 16px;display:none;
+  max-height:65vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.spanel.open{display:block}
+.sg{display:grid;grid-template-columns:1fr;gap:4px}
+.sr{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.sr label{font-size:11.5px;color:rgba(255,255,255,.75);flex:1}
+.sr input{font-family:var(--mono);font-size:14px;width:76px;padding:5px 8px;
+  border:1px solid rgba(255,255,255,.2);border-radius:4px;background:rgba(255,255,255,.08);color:#fff;text-align:right}
+.sr .u{font-size:10px;color:rgba(255,255,255,.35);min-width:40px}
+.ssec{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:rgba(255,255,255,.35);
+  margin-top:8px;padding-top:6px;border-top:1px solid rgba(255,255,255,.08);font-weight:700}
+
+/* ── PAGE ── */
+.page{max-width:760px;margin:0 auto;padding:14px 12px 80px}
+
+/* ── STEPS ── */
+.steps{display:flex;align-items:center;margin-bottom:14px;gap:4px}
+.step{display:flex;align-items:center;gap:6px;flex:1}
+.snum{width:26px;height:26px;border-radius:50%;background:var(--bd);color:var(--mu);
+  font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.slbl{font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.4px}
+.step.active .snum{background:var(--kpc);color:var(--gold)}
+.step.active .slbl{color:var(--kpc)}
+.step.done .snum{background:var(--grn);color:#fff}
+.step.done .slbl{color:var(--grn)}
+.sline{flex:1;height:2px;background:var(--bd);min-width:8px}
+.sline.done{background:var(--grn)}
+
+/* ── CARDS ── */
+.card{background:var(--card);border-radius:10px;box-shadow:0 1px 6px rgba(45,41,38,.08);
+  border:1px solid var(--bd);margin-bottom:12px;overflow:hidden}
+.chdr{background:var(--surf);border-bottom:1px solid var(--bd);padding:11px 14px;
+  display:flex;align-items:center;gap:10px}
+.chdr .ico{font-size:18px}
+.chdr h2{font-size:14px;font-weight:700;color:var(--kpc)}
+.chdr p{font-size:11px;color:var(--mu);margin-top:1px}
+.cbody{padding:14px}
+
+/* ── METHOD TABS ── */
+.mtabs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px}
+.mtab{background:var(--surf);border:2px solid var(--bd);border-radius:10px;
+  padding:12px 6px;text-align:center;cursor:pointer}
+.mtab:active,.mtab.active{border-color:var(--kpc);background:var(--kpc)}
+.mtab .ico{font-size:26px;display:block;margin-bottom:3px}
+.mtab .lbl{font-size:11px;font-weight:700;color:var(--tx)}
+.mtab.active .lbl{color:var(--gold)}
+
+/* ── PHOTO / FILE DROP ── */
+.cam-wrap,.drop{border:2px dashed var(--bd2);border-radius:10px;padding:28px 16px;
+  text-align:center;cursor:pointer;background:var(--surf)}
+.cam-wrap:active,.drop:active,.drop.drag{border-color:var(--gold);background:var(--glt)}
+.cam-wrap .ci,.drop .ci{font-size:44px}
+.cam-wrap h3,.drop h3{font-size:15px;font-weight:700;color:var(--kpc);margin:8px 0 4px}
+.cam-wrap p,.drop p{font-size:12px;color:var(--mu)}
+.drop .hint{margin-top:8px;font-size:10px;background:rgba(0,0,0,.04);
+  padding:4px 10px;border-radius:18px;display:inline-block;color:#b5a99e}
+input[type=file]{display:none}
+
+/* ── DRAWING CANVAS ── */
+.draw-outer{background:var(--surf);border-radius:10px;border:2px solid var(--bd);overflow:visible;position:relative}
+
+/* Tool bars */
+.tb1,.tb2{background:var(--kpc);display:flex;align-items:center;gap:5px;padding:7px 10px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+.tb1{border-radius:8px 8px 0 0}
+.tb1::-webkit-scrollbar,.tb2::-webkit-scrollbar{display:none}
+.tb2{background:#1a1410;border-top:1px solid rgba(255,255,255,.08)}
+.tbtn{background:rgba(255,255,255,.1);color:#fff;border:none;border-radius:6px;
+  min-width:38px;height:38px;cursor:pointer;font-family:var(--sans);font-weight:700;font-size:13px;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0 6px;gap:4px}
+.tbtn:active{background:rgba(255,255,255,.2)}
+.tbtn.on{background:var(--gold);color:var(--kpc)}
+.tbtn.red{background:rgba(200,60,60,.3);color:#fca}
+.tbtn svg{pointer-events:none;flex-shrink:0}
+.tsep{width:1px;height:28px;background:rgba(255,255,255,.15);flex-shrink:0;margin:0 2px}
+.thint{background:#0f0c0a;color:var(--gold);padding:5px 12px;font-size:11px;
+  font-weight:600;text-align:center;border-top:1px solid rgba(255,255,255,.05)}
+
+/* Canvas itself */
+.draw-canvas{display:block;width:100%;background:#fffef8;
+  background-image:linear-gradient(rgba(196,164,107,.15) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(196,164,107,.15) 1px,transparent 1px);
+  background-size:25px 25px;cursor:crosshair;touch-action:none}
+
+.draw-foot{background:var(--surf);padding:6px 12px;text-align:center;
+  font-size:10.5px;color:var(--mu);border-top:1px solid var(--bd)}
+
+/* Color swatches */
+.swatch{width:26px;height:26px;border-radius:50%;border:2px solid rgba(255,255,255,.25);cursor:pointer;flex-shrink:0}
+.swatch.on{border-color:var(--gold);box-shadow:0 0 0 2px rgba(196,164,107,.5)}
+
+/* Stroke size */
+.sw-btn{background:rgba(255,255,255,.1);color:#fff;border:none;width:32px;height:32px;
+  border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sw-btn.on{background:var(--gold);color:var(--kpc)}
+.dot{border-radius:50%;background:currentColor}
+
+/* Numpad overlay */
+.numpad{position:absolute;bottom:0;left:0;right:0;background:#1a1410;border-top:2px solid var(--gold);
+  padding:10px;z-index:50;display:none}
+.numpad.show{display:block}
+.npgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-bottom:5px}
+.nprow{display:flex;gap:5px}
+.npk{background:rgba(255,255,255,.1);color:#fff;border:none;border-radius:6px;
+  padding:10px 4px;font-size:16px;font-weight:700;cursor:pointer;font-family:var(--mono);
+  min-height:44px;width:100%;text-align:center}
+.npk:active{background:var(--gold);color:var(--kpc)}
+.npk.wide{flex:2}
+.npk.del{background:rgba(200,60,60,.25);color:#fca}
+.npk.ok{background:var(--grn);color:#fff;flex:1}
+.npk.word{font-size:11px;font-weight:700;background:rgba(26,68,128,.4);font-family:var(--sans)}
+
+/* ── PREVIEW (step 1 → step 2) ── */
+.prev-box{border-radius:8px;overflow:hidden;background:#f0f0f0;display:flex;justify-content:center;min-height:100px}
+.prev-box img{max-width:100%;max-height:260px;object-fit:contain;display:block}
+.pdf-icon{padding:28px;display:flex;flex-direction:column;align-items:center;gap:6px}
+.pdf-icon .pi{font-size:44px}
+.pdf-icon p{font-size:12px;font-weight:600;color:var(--kpc)}
+.pdf-icon small{font-size:10px;color:var(--mu);text-align:center;word-break:break-all}
+
+/* Spinner */
+.spin-wrap{display:flex;flex-direction:column;align-items:center;padding:36px 20px;gap:12px}
+.spinner{width:44px;height:44px;border:4px solid var(--bd);border-top-color:var(--gold);
+  border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin-wrap h3{font-size:15px;font-weight:700;color:var(--kpc)}
+.spin-wrap p{font-size:12px;color:var(--mu)}
+
+/* ── FORM ── */
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fg.g4{grid-template-columns:1fr 1fr}
+.fg.g1{grid-template-columns:1fr}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:11px;font-weight:700;color:var(--kpc);display:flex;align-items:center;gap:5px}
+.ai-tag{background:var(--grn-bg);border:1px solid #8ec4a8;border-radius:10px;
+  padding:1px 6px;font-size:9px;font-weight:700;color:var(--grn)}
+.field input,.field select,.field textarea{font-family:var(--sans);font-size:16px;padding:10px 12px;
+  border:2px solid var(--bd);border-radius:6px;background:var(--card);color:var(--tx);
+  width:100%;-webkit-appearance:none}
+.field input[type=number]{font-family:var(--mono)}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--gold);background:var(--hl)}
+.uw{position:relative}.uw input{padding-right:40px}
+.ub{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:11px;font-weight:700;color:var(--mu);pointer-events:none}
+.fhint{font-size:10px;color:var(--mu);margin-top:1px}
+
+/* ── 3D PROFILE SELECTOR ── */
+.prof-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.prof-opt{border:2px solid var(--bd);border-radius:10px;padding:10px 6px 8px;
+  cursor:pointer;text-align:center;background:var(--surf)}
+.prof-opt:active{transform:scale(.97)}
+.prof-opt.sel{border-color:var(--kpc);background:var(--kpc)}
+.prof-opt canvas{display:block;margin:0 auto 4px;border-radius:4px}
+.prof-opt .pn{font-size:12px;font-weight:700;color:var(--tx)}
+.prof-opt.sel .pn{color:#fff}
+.prof-opt .pd{font-size:9.5px;color:var(--mu);margin-top:1px}
+.prof-opt.sel .pd{color:rgba(255,255,255,.6)}
+
+/* ── STEPPER ── */
+.stepper{display:flex;border:2px solid var(--bd);border-radius:6px;overflow:hidden;height:46px}
+.stepper button{width:46px;height:100%;background:var(--surf);border:none;cursor:pointer;
+  font-size:22px;color:var(--kpc);font-weight:700;flex-shrink:0}
+.stepper button:active{background:var(--glt)}
+.stepper input{flex:1;text-align:center;font-family:var(--mono);font-size:18px;font-weight:700;
+  color:var(--kpc);border:none;border-left:2px solid var(--bd);border-right:2px solid var(--bd);
+  background:var(--card);outline:none;height:100%}
+.sh{font-size:11px;color:var(--mu);margin-top:4px;min-height:14px}
+.tog{display:flex;border:2px solid var(--bd);border-radius:6px;overflow:hidden}
+.tog button{flex:1;padding:9px 4px;font-size:12px;font-weight:600;color:var(--mu);
+  background:var(--surf);border:none;font-family:var(--sans)}
+.tog button.on{background:var(--kpc);color:#fff}
+
+.extras{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.extra{border:2px solid var(--bd);border-radius:8px;padding:12px;background:var(--surf)}
+.extra h4{font-size:13px;font-weight:700;color:var(--kpc);margin-bottom:3px}
+.extra p{font-size:10.5px;color:var(--mu);margin-bottom:8px;line-height:1.4}
+
+.abw{background:var(--surf);border:1px solid var(--bd);border-radius:6px;
+  padding:10px 12px;display:flex;justify-content:space-between;align-items:center;margin-top:12px}
+.abw span{font-size:12px;color:var(--mu)}
+.abw strong{font-family:var(--mono);font-size:14px;color:var(--kpc)}
+
+/* ── RESULT ── */
+.res-hdr{background:var(--kpc);padding:14px 16px;border-radius:10px 10px 0 0}
+.res-hdr .rl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--gold);margin-bottom:3px}
+.res-hdr .rp{font-size:15px;font-weight:700;color:#fff}
+.res-hdr .rd{font-size:10.5px;color:rgba(255,255,255,.4);margin-top:3px}
+.res-body{padding:14px}
+.r-desc{background:var(--glt);border:1px solid var(--gold);border-radius:6px;
+  padding:10px 12px;font-size:11.5px;color:var(--kpc);line-height:1.6;margin-bottom:12px}
+.r-det{background:var(--surf);border-radius:6px;padding:10px 12px;margin-bottom:12px}
+.r-det h4{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--warm);margin-bottom:6px}
+.rl{display:flex;justify-content:space-between;font-size:11.5px;padding:3px 0;color:var(--mu)}
+.rl .rv{font-family:var(--mono);color:var(--kpc)}
+.rl.b{font-weight:700;border-top:1px solid var(--bd);padding-top:5px;margin-top:3px}
+.rl.b .rv{font-size:13px}
+.rrow{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--bd);font-size:13px}
+.rrow:last-child{border-bottom:none}
+.rrow .rl2{color:var(--mu)}.rrow .rr{font-family:var(--mono);font-weight:600;color:var(--kpc)}
+.rrow.sep{border-bottom:2px solid var(--kpc)}
+.rrow.tot{font-size:16px;font-weight:700}.rrow.tot .rl2{color:var(--kpc)}.rrow.tot .rr{color:var(--grn);font-size:20px}
+.rrow.brut .rl2,.rrow.brut .rr{font-size:11px;color:var(--mu)}
+
+/* ── BLENDE PREVIEW ── */
+.bv-wrap{background:#fffef8;border-radius:8px;border:1px solid var(--bd);overflow:hidden;
+  background-image:linear-gradient(rgba(196,164,107,.1) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(196,164,107,.1) 1px,transparent 1px);
+  background-size:20px 20px}
+.bv-canvas{display:block;width:100%}
+.bv-info{font-size:11px;color:var(--mu);text-align:center;padding:6px;background:var(--surf);
+  border-radius:0 0 6px 6px;font-family:var(--mono)}
+
+/* ── BUTTONS ── */
+.btn{font-family:var(--sans);font-size:14px;font-weight:700;border:none;padding:12px 18px;
+  border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  gap:8px;min-height:48px;width:100%}
+.btn:active{transform:scale(.98)}
+.btn-kpc{background:var(--kpc);color:#fff}
+.btn-warm{background:var(--warm);color:#fff}
+.btn-gold{background:var(--gold);color:var(--kpc)}
+.btn-sec{background:var(--surf);color:var(--kpc);border:2px solid var(--bd)}
+.btn-lnk{background:none;border:none;color:var(--mu);font-family:var(--sans);
+  font-size:12px;cursor:pointer;text-decoration:underline;padding:6px 0;width:auto}
+.brow{display:flex;flex-direction:column;gap:10px;margin-top:16px}
+
+/* ── ALERTS ── */
+.al{padding:10px 14px;border-radius:6px;font-size:12px;margin-bottom:10px;line-height:1.5}
+.al-i{background:#e8eef8;border:1px solid #8aaad0;color:#2a4466}
+.al-w{background:#fff8e8;border:1px solid #d4a840;color:#7a5010}
+.al-e{background:#faeaea;border:1px solid #c08080;color:#6a2020}
+.al-ok{background:var(--grn-bg);border:1px solid #8ec4a8;color:var(--grn)}
+
+/* ── MODAL ── */
+.modal-bg{display:none;position:fixed;top:0;left:0;width:100%;height:100%;
+  background:rgba(0,0,0,.6);z-index:500;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.modal-bg.open{display:block}
+.modal{background:#fff;border-radius:14px 14px 0 0;max-width:700px;margin:60px auto 0;
+  box-shadow:0 8px 40px rgba(0,0,0,.3);overflow:hidden;min-height:calc(100vh - 60px)}
+.mhdr{background:var(--kpc);padding:13px 16px;display:flex;justify-content:space-between;
+  align-items:center;position:sticky;top:0;z-index:10}
+.mhdr .mt{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--gold)}
+.mhdr .mh{font-size:14px;font-weight:700;color:#fff;margin-top:1px}
+.mclose{background:rgba(255,255,255,.15);border:none;color:#fff;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:16px}
+.mbody{padding:14px}
+.msec{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--warm);
+  border-bottom:2px solid var(--glt);padding-bottom:4px;margin-bottom:12px;margin-top:12px}
+.msec:first-child{margin-top:0}
+.mprice{background:var(--surf);border-radius:8px;padding:12px 14px;margin:12px 0}
+.mpr{display:flex;justify-content:space-between;font-size:12px;padding:3px 0;border-bottom:1px solid var(--bd)}
+.mpr:last-child{border-bottom:none;font-size:15px;font-weight:700;padding-top:7px}
+.mpr .mv{font-family:var(--mono);font-weight:600}
+.mpr.tot .mv{color:var(--grn)}
+
+/* ── PROJECTS / SELECTION ── */
+.proj-tabs{display:flex;gap:6px;overflow-x:auto;padding:0 0 10px;margin-bottom:8px;scrollbar-width:none;border-bottom:1px solid var(--bd)}
+.proj-tabs::-webkit-scrollbar{display:none}
+.proj-tab{flex-shrink:0;padding:6px 12px;background:var(--surf);border:1px solid var(--bd);border-radius:16px;
+  cursor:pointer;font-size:12px;font-weight:600;color:var(--mu);white-space:nowrap;display:flex;align-items:center;gap:4px}
+.proj-tab.act{background:var(--kpc);color:var(--gold);border-color:var(--kpc)}
+.proj-tab .pcount{background:rgba(255,255,255,.15);border-radius:8px;padding:1px 6px;font-size:10px;font-weight:700}
+.proj-tab.act .pcount{background:var(--gold);color:var(--kpc)}
+.sel-bar{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--surf);border-radius:6px;margin-bottom:10px}
+.sel-all{display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;font-weight:700;color:var(--kpc);user-select:none}
+.sel-all input[type=checkbox]{width:18px;height:18px;cursor:pointer;accent-color:var(--gold)}
+.mi-chk{width:22px;height:22px;cursor:pointer;accent-color:var(--gold);flex-shrink:0;align-self:center}
+.mi-edit{background:var(--surf);border:1px solid var(--bd);width:30px;height:30px;
+  border-radius:5px;cursor:pointer;font-size:13px;color:var(--warm);flex-shrink:0;margin-bottom:4px}
+.mi-actions{display:flex;flex-direction:column;gap:4px;flex-shrink:0}
+
+/* ── MAPPE ── */
+.mi{background:var(--surf);border:1px solid var(--bd);border-radius:8px;
+  padding:10px;margin-bottom:8px;display:flex;gap:8px;align-items:flex-start}
+.mi-pos{background:var(--kpc);color:var(--gold);width:26px;height:26px;border-radius:13px;
+  display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0}
+.mi-info{flex:1;min-width:0}
+.mi-bez{font-size:13px;font-weight:700;color:var(--kpc);margin-bottom:1px}
+.mi-desc{font-size:10.5px;color:var(--mu);line-height:1.4;margin-bottom:6px}
+.mi-row{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;font-size:12px}
+.qty{display:flex;align-items:center;gap:2px;background:#fff;border:1px solid var(--bd);border-radius:5px;padding:1px}
+.qty button{width:26px;height:26px;background:none;border:none;font-size:14px;font-weight:700;color:var(--kpc);cursor:pointer}
+.qty input{width:34px;text-align:center;border:none;font-family:var(--mono);font-weight:700;font-size:13px;background:transparent}
+.mi-pr{font-family:var(--mono);font-weight:700;color:var(--kpc)}
+.mi-del{background:none;border:1px solid #e0c0c0;width:30px;height:30px;
+  border-radius:5px;cursor:pointer;font-size:12px;color:#a04040;flex-shrink:0}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+  background:var(--kpc);color:var(--gold);padding:9px 18px;border-radius:22px;
+  font-size:12px;font-weight:700;box-shadow:0 4px 16px rgba(0,0,0,.35);
+  z-index:999;opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1}
+
+.hidden{display:none!important}
+
+@media(min-width:560px){
+  .extras{grid-template-columns:1fr 1fr}
+  .prof-grid{grid-template-columns:1fr 1fr 1fr 1fr}
+  .fg.g4{grid-template-columns:1fr 1fr 1fr 1fr}
+  .brow{flex-direction:row}
+  .brow .btn{width:auto;flex:1}
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="logo"><span>k</span><span>p</span><span>c</span><span>&nbsp;</span></div>
+  <div class="hdr-t"><h1>Blenden-Kalkulator</h1><p>KPC GmbH</p></div>
+  <button class="hbtn badge-btn" onclick="openMappe()">&#128203;<span id="mapBadge" class="badge-num">0</span></button>
+  <button class="hbtn" onclick="toggleSP()">&#9881;</button>
+</div>
+
+<!-- SETTINGS -->
+<div class="spanel" id="sPanel">
+  <div class="sg">
+    <div class="ssec">&#128274; KI-Zugang (Google Gemini)</div>
+    <div style="background:rgba(196,164,107,.1);border:1px solid rgba(196,164,107,.4);border-radius:6px;padding:10px;margin-bottom:10px">
+      <p style="font-size:11px;color:rgba(255,255,255,.75);margin-bottom:8px;line-height:1.5">F&uuml;r die KI-Erkennung wird ein Google Gemini API-Key ben&ouml;tigt &mdash; <strong style="color:var(--gold)">100% kostenlos, keine Kreditkarte</strong>. Hol dir den Key auf <a href="https://aistudio.google.com/apikey" target="_blank" style="color:var(--gold)">aistudio.google.com/apikey</a> &mdash; 1.000 Analysen pro Tag inklusive.</p>
+      <input type="password" id="apiKeyIn" placeholder="AIzaSy..." autocomplete="off" style="width:100%;font-family:var(--mono);font-size:11px;padding:7px 9px;border:1px solid rgba(255,255,255,.2);border-radius:4px;background:rgba(0,0,0,.3);color:#fff;margin-bottom:6px">
+      <button onclick="saveApiKey()" style="background:var(--gold);color:var(--kpc);border:none;padding:6px 14px;border-radius:4px;font-family:var(--sans);font-weight:700;font-size:12px;cursor:pointer">Speichern</button>
+      <span id="apiStat" style="margin-left:8px;font-size:11px;font-weight:700"></span>
+    </div>
+    <div class="ssec">EK-S&auml;tze &euro;/m&sup2;</div>
+    <div class="sr"><label>CNS 1,0 mm offen</label><input type="number" id="s_r1o" value="55" oninput="recalc()"><span class="u">&euro;/m&sup2;</span></div>
+    <div class="sr"><label>CNS 1,0 mm verschwei&szlig;t</label><input type="number" id="s_r1v" value="70" oninput="recalc()"><span class="u">&euro;/m&sup2;</span></div>
+    <div class="sr"><label>CNS 1,5 mm offen</label><input type="number" id="s_r15o" value="72" oninput="recalc()"><span class="u">&euro;/m&sup2;</span></div>
+    <div class="sr"><label>CNS 1,5 mm verschwei&szlig;t</label><input type="number" id="s_r15v" value="90" oninput="recalc()"><span class="u">&euro;/m&sup2;</span></div>
+    <div class="sr"><label>CNS Flachmaterial</label><input type="number" id="s_rfl" value="40" oninput="recalc()"><span class="u">&euro;/m&sup2;</span></div>
+    <div class="ssec">Mindestpreise EK</div>
+    <div class="sr"><label>CNS 1,0 mm</label><input type="number" id="s_m1" value="28" oninput="recalc()"><span class="u">&euro;/Stk</span></div>
+    <div class="sr"><label>CNS 1,5 mm</label><input type="number" id="s_m15" value="18" oninput="recalc()"><span class="u">&euro;/Stk</span></div>
+    <div class="sr"><label>CNS Flach</label><input type="number" id="s_mfl" value="12" oninput="recalc()"><span class="u">&euro;/Stk</span></div>
+    <div class="ssec">Mehraufwand</div>
+    <div class="sr"><label>Kantung &times; L&auml;nge</label><input type="number" id="s_ka" value="6" oninput="recalc()"><span class="u">&euro;/lm</span></div>
+    <div class="sr"><label>Ausschnitt einfach</label><input type="number" id="s_ausE" value="15" oninput="recalc()"><span class="u">&euro;/Stk</span></div>
+    <div class="sr"><label>Ausschnitt komplex</label><input type="number" id="s_ausK" value="35" oninput="recalc()"><span class="u">&euro;/Stk</span></div>
+    <div class="sr"><label>Schwei&szlig;naht extra</label><input type="number" id="s_sw" value="25" oninput="recalc()"><span class="u">&euro;/Stk</span></div>
+    <div class="ssec">VK</div>
+    <div class="sr"><label>Zuschlag</label><input type="number" id="s_zul" value="31" oninput="recalc()"><span class="u">%</span></div>
+    <div class="sr"><label>Silikon</label><input type="number" id="s_sil" value="15" oninput="recalc()"><span class="u">&euro;/lfm</span></div>
+    <div class="sr"><label>Aufma&szlig;</label><input type="number" id="s_aufm" value="43" oninput="recalc()"><span class="u">&euro;/Stk</span></div>
+    <div class="sr"><label>Stundensatz</label><input type="number" id="s_std" value="84" oninput="recalc()"><span class="u">&euro;/h</span></div>
+    <div class="sr"><label>Montage/Blende</label><input type="number" id="s_mh" value="0.5" step="0.25" oninput="recalc()"><span class="u">h</span></div>
+  </div>
+</div>
+
+<div class="page">
+
+<!-- STEPS -->
+<div class="steps">
+  <div class="step active" id="si1"><div class="snum">1</div><div class="slbl">Eingabe</div></div>
+  <div class="sline" id="sl1"></div>
+  <div class="step active" id="si2"><div class="snum">2</div><div class="slbl">Ma&szlig;e</div></div>
+  <div class="sline" id="sl2"></div>
+  <div class="step" id="si3"><div class="snum">3</div><div class="slbl">Ergebnis</div></div>
+</div>
+
+<!-- ══════════════════ STEP 1 ══════════════════ -->
+<div id="step1">
+<div class="card">
+  <div class="chdr"><span class="ico">&#128208;</span>
+    <div><h2>Blende erfassen</h2><p>W&auml;hle eine Methode</p></div>
+  </div>
+  <div class="cbody">
+    <div class="al al-e hidden" id="errBox"></div>
+
+    <div class="mtabs">
+      <div class="mtab active" id="mt-photo" onclick="selMethod('photo')"><span class="ico">&#128247;</span><span class="lbl">Foto</span></div>
+      <div class="mtab" id="mt-draw" onclick="selMethod('draw')"><span class="ico">&#9999;&#65039;</span><span class="lbl">Zeichnen</span></div>
+      <div class="mtab" id="mt-file" onclick="selMethod('file')"><span class="ico">&#128194;</span><span class="lbl">Datei</span></div>
+    </div>
+
+    <!-- PHOTO -->
+    <div id="m-photo" class="mcontent">
+      <div class="cam-wrap" onclick="document.getElementById('camIn').click()">
+        <div class="ci">&#128247;</div>
+        <h3>Foto aufnehmen</h3>
+        <p>Kamera &ouml;ffnet sich &mdash; KI analysiert Skizze direkt aus dem Foto</p>
+        <input type="file" id="camIn" accept="image/*" capture="environment" onchange="loadFile(this.files[0])">
+      </div>
+    </div>
+
+    <!-- DRAW -->
+    <div id="m-draw" class="mcontent hidden">
+      <div class="draw-outer">
+        <!-- Tool row 1: Drawing tools -->
+        <div class="tb1">
+          <button class="tbtn on" id="t-pen" onclick="selTool('pen',this)" title="Freihand">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+          </button>
+          <button class="tbtn" id="t-line" onclick="selTool('line',this)" title="Linie / Lineal">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="21" x2="21" y2="3"/></svg>
+          </button>
+          <button class="tbtn" id="t-dash" onclick="selTool('dash',this)" title="Hilfslinie gestrichelt">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="4 3"><line x1="3" y1="12" x2="21" y2="12"/></svg>
+          </button>
+          <button class="tbtn" id="t-dim" onclick="selTool('dim',this)" title="Ma&szlig;linie mit Pfeil + Wert">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="12" x2="21" y2="12"/><polyline points="7,8 3,12 7,16"/><polyline points="17,8 21,12 17,16"/></svg>
+          </button>
+          <button class="tbtn" id="t-text" onclick="selTool('text',this)" title="Text einf&uuml;gen">A</button>
+          <button class="tbtn" id="t-erase" onclick="selTool('erase',this)" title="Radieren">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M20 20H7L3 16l10-10 7 7-1.5 1.5"/></svg>
+          </button>
+          <div class="tsep"></div>
+          <button class="tbtn" onclick="undo()" title="R&uuml;ckg&auml;ngig">&#x21B6;</button>
+          <button class="tbtn red" onclick="clearAll()" title="Alles l&ouml;schen">&#x1F5D1;</button>
+          <div style="flex:1"></div>
+          <button class="tbtn" id="finBtn" onclick="finishDraw()" style="background:var(--warm);color:#fff;min-width:70px">&#10003; Fertig</button>
+        </div>
+
+        <!-- Tool row 2: Color + Stroke -->
+        <div class="tb2">
+          <span style="font-size:10px;color:rgba(255,255,255,.5);white-space:nowrap;flex-shrink:0;margin-right:2px">Farbe:</span>
+          <div class="swatch on" style="background:#1a4480" onclick="selColor('#1a4480',this)"></div>
+          <div class="swatch" style="background:#111" onclick="selColor('#111',this)"></div>
+          <div class="swatch" style="background:#c4302b" onclick="selColor('#c4302b',this)"></div>
+          <div class="tsep"></div>
+          <span style="font-size:10px;color:rgba(255,255,255,.5);white-space:nowrap;flex-shrink:0">Strich:</span>
+          <button class="sw-btn" onclick="selSW(1.5,this)"><span class="dot" style="width:3px;height:3px"></span></button>
+          <button class="sw-btn on" onclick="selSW(2.5,this)"><span class="dot" style="width:6px;height:6px"></span></button>
+          <button class="sw-btn" onclick="selSW(4,this)"><span class="dot" style="width:9px;height:9px"></span></button>
+          <div class="tsep"></div>
+          <button class="tbtn" id="npBtn" onclick="toggleNP()" title="Zahlen-Pad">123</button>
+        </div>
+
+        <!-- Tool hint -->
+        <div class="thint" id="thint">&#9999; Freihand zeichnen &mdash; Werkzeuge oben ausw&auml;hlen</div>
+
+        <!-- Canvas -->
+        <canvas id="drawCanvas" class="draw-canvas"></canvas>
+
+        <!-- Numpad overlay -->
+        <div class="numpad" id="numPad">
+          <div class="npgrid">
+            <button class="npk" onclick="npi('7')">7</button><button class="npk" onclick="npi('8')">8</button><button class="npk" onclick="npi('9')">9</button>
+            <button class="npk word" onclick="npi(' mm')">mm</button><button class="npk del" onclick="npi('BS')">&#x232B;</button>
+            <button class="npk" onclick="npi('4')">4</button><button class="npk" onclick="npi('5')">5</button><button class="npk" onclick="npi('6')">6</button>
+            <button class="npk" onclick="npi('.')">.</button><button class="npk" onclick="npi(',')">,</button>
+            <button class="npk" onclick="npi('1')">1</button><button class="npk" onclick="npi('2')">2</button><button class="npk" onclick="npi('3')">3</button>
+            <button class="npk" onclick="npi('0')">0</button><button class="npk" onclick="npi('00')">00</button>
+          </div>
+          <div class="nprow">
+            <button class="npk word" onclick="npi('U-Prof. ')">U-Prof.</button>
+            <button class="npk word" onclick="npi('L-Prof. ')">L-Prof.</button>
+            <button class="npk word" onclick="npi('Z-Prof. ')">Z-Prof.</button>
+            <button class="npk ok" onclick="npiOK()">&#10003;</button>
+          </div>
+        </div>
+
+        <div class="draw-foot">Apple Pencil, Finger oder Maus &nbsp;&middot;&nbsp; Ma&szlig;linie: 2 Punkte tippen &rarr; Wert eingeben &nbsp;&middot;&nbsp; Wenn fertig: KI analysiert Skizze automatisch</div>
+      </div>
+
+      <!-- DIM input overlay -->
+      <div id="dimOverlay" class="hidden" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);z-index:400;display:flex;align-items:center;justify-content:center;padding:20px">
+        <div style="background:#fff;border-radius:12px;padding:20px;width:100%;max-width:380px">
+          <div style="font-size:13px;font-weight:700;color:var(--kpc);margin-bottom:10px">&#8596; Ma&szlig; eingeben</div>
+          <input type="text" id="dimInput" inputmode="decimal" placeholder="z.B. 1375 mm" style="width:100%;font-size:20px;padding:12px;border:2px solid var(--gold);border-radius:8px;font-family:var(--mono);margin-bottom:12px">
+          <div style="display:flex;gap:10px">
+            <button onclick="confirmDim()" style="flex:1;background:var(--kpc);color:#fff;border:none;padding:12px;border-radius:8px;font-size:14px;font-weight:700;font-family:var(--sans)">&#10003; OK</button>
+            <button onclick="cancelDim()" style="background:var(--surf);border:2px solid var(--bd);padding:12px 16px;border-radius:8px;font-size:14px;font-family:var(--sans)">Abbruch</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Text input overlay -->
+      <div id="txtOverlay" class="hidden" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);z-index:400;display:flex;align-items:center;justify-content:center;padding:20px">
+        <div style="background:#fff;border-radius:12px;padding:20px;width:100%;max-width:380px">
+          <div style="font-size:13px;font-weight:700;color:var(--kpc);margin-bottom:10px">A Text eingeben</div>
+          <input type="text" id="txtInput" placeholder="Beschriftung..." style="width:100%;font-size:18px;padding:12px;border:2px solid var(--gold);border-radius:8px;margin-bottom:12px;font-family:var(--sans)">
+          <div style="display:flex;gap:10px">
+            <button onclick="confirmTxt()" style="flex:1;background:var(--kpc);color:#fff;border:none;padding:12px;border-radius:8px;font-size:14px;font-weight:700;font-family:var(--sans)">&#10003; OK</button>
+            <button onclick="cancelTxt()" style="background:var(--surf);border:2px solid var(--bd);padding:12px 16px;border-radius:8px;font-size:14px;font-family:var(--sans)">Abbruch</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FILE -->
+    <div id="m-file" class="mcontent hidden">
+      <div class="drop" ondragover="event.preventDefault();this.classList.add('drag')"
+        ondragleave="this.classList.remove('drag')" ondrop="onDrop(event)"
+        onclick="document.getElementById('fileIn').click()">
+        <div class="ci">&#128194;</div>
+        <h3>Datei ausw&auml;hlen</h3>
+        <p>JPG, PNG oder PDF mit Zeichnung &mdash; KI liest Ma&szlig;e automatisch</p>
+        <div class="hint">PC: Strg+V f&uuml;r Screenshot</div>
+        <input type="file" id="fileIn" accept="image/*,.pdf,application/pdf" onchange="loadFile(this.files[0])">
+      </div>
+    </div>
+
+    <!-- PREVIEW (after load) -->
+    <div id="prevArea" class="hidden" style="margin-top:12px">
+      <div class="prev-box">
+        <img id="prevImg" src="" alt="" style="display:none">
+        <div id="pdfBox" class="pdf-icon hidden"><div class="pi">&#128196;</div><p>PDF geladen</p><small id="pdfName"></small></div>
+      </div>
+      <div class="al al-ok" style="margin-top:10px;margin-bottom:0"><strong id="prevName">Datei geladen</strong></div>
+      <p id="prevHint" style="font-size:12px;color:var(--mu);margin:6px 0 10px;line-height:1.5"></p>
+      <div id="spinArea" class="hidden"><div class="spin-wrap"><div class="spinner"></div><h3>KI analysiert&hellip;</h3><p>Profiltyp und Ma&szlig;e werden erkannt</p></div></div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <button id="aiBtn" class="btn btn-kpc hidden" onclick="runAI()">&#128269; KI analysieren</button>
+        <button id="manBtn" class="btn btn-gold hidden" onclick="gotoStep(2)">Weiter zur Eingabe &rarr;</button>
+        <button class="btn-lnk" onclick="clearFile()">&larr; Andere Eingabe</button>
+      </div>
+    </div>
+
+    <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--bd)">
+      <button class="btn btn-sec" onclick="gotoStep(2)">Direkt manuell eingeben &rarr;</button>
+    </div>
+  </div>
+</div>
+</div><!-- /step1 -->
+
+<!-- ══════════════════ STEP 2 ══════════════════ -->
+<div id="step2" class="hidden">
+
+<!-- Reference image stays visible -->
+<div class="card hidden" id="refCard">
+  <div class="cbody" style="padding:8px">
+    <div class="prev-box" style="min-height:0"><img id="refImg" src="" alt="" style="max-height:180px"></div>
+    <button class="btn-lnk" style="display:block;text-align:center;margin-top:6px" onclick="gotoStep(1)">&larr; Andere Eingabe</button>
+  </div>
+</div>
+
+<div id="aiAlertBox" class="al al-w hidden">&#129302; <strong>KI-Vorschlag.</strong> Bitte alle Werte gegen die Zeichnung pr&uuml;fen &mdash; KI kann sich irren.</div>
+
+<!-- Blende preview -->
+<div class="card">
+  <div class="chdr"><span class="ico">&#128221;</span><div><h2>Blenden-Vorschau</h2><p>Live-Vorschau auf Basis der aktuellen Werte</p></div></div>
+  <div class="cbody" style="padding:10px">
+    <div class="bv-wrap"><canvas id="bvCanvas" class="bv-canvas"></canvas></div>
+    <div class="bv-info" id="bvInfo">&ndash;</div>
+  </div>
+</div>
+
+<div class="card"><div class="cbody">
+  <div class="fg g1" style="margin-bottom:10px">
+    <div class="field"><label>Projekt</label><input type="text" id="f_proj" placeholder="z.B. Schwarzbachhallen" oninput="recalc()"></div>
+    <div class="field"><label>Bezeichnung</label><input type="text" id="f_name" placeholder="z.B. Wandanschlussblende" oninput="recalc()"></div>
+  </div>
+</div></div>
+
+<!-- Profile + Material -->
+<div class="card">
+  <div class="chdr"><span class="ico">&#128207;</span><div><h2>Profil &amp; Material</h2></div></div>
+  <div class="cbody">
+    <div class="prof-grid" id="profGrid"></div>
+    <div class="fg">
+      <div class="field"><label>Material <span id="t_mat" class="ai-tag hidden">KI</span></label>
+        <select id="f_mat" onchange="recalc()"><option value="1mm">CNS 1,0 mm</option><option value="1.5mm">CNS 1,5 mm</option><option value="flat">CNS Flach</option></select>
+      </div>
+      <div class="field"><label>Ecken <span id="t_ecke" class="ai-tag hidden">KI</span></label>
+        <select id="f_ecke" onchange="recalc()"><option value="offen">offen</option><option value="versch">verschwei&szlig;t</option></select>
+      </div>
+    </div>
+    <div class="fg g1" style="margin-top:10px">
+      <div class="field"><label>Silikon-Fuge</label><div class="uw"><input type="number" id="f_sil" value="1.0" min="0" step="0.1" oninput="recalc()"><span class="ub">lfm</span></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- Dimensions -->
+<div class="card">
+  <div class="chdr"><span class="ico">&#128208;</span><div><h2>Abmessungen <span style="font-size:10px;font-weight:400;color:var(--mu)">(mm, Au&szlig;enma&szlig;)</span></h2></div></div>
+  <div class="cbody">
+    <div id="dimE">
+      <div class="al al-i" style="font-size:11px;margin-bottom:10px">L = L&auml;ngste Seite &nbsp;&middot;&nbsp; A/B/C = Querschnittschenkel &nbsp;&middot;&nbsp; Nicht ben&ouml;tigt = 0</div>
+      <div class="fg g4">
+        <div class="field"><label>L&auml;nge <span id="t_L" class="ai-tag hidden">KI</span></label><div class="uw"><input type="number" id="f_L" value="0" min="0" oninput="recalc()"><span class="ub">mm</span></div><div class="fhint">L&auml;ngsseite</div></div>
+        <div class="field"><label>Schenkel A <span id="t_A" class="ai-tag hidden">KI</span></label><div class="uw"><input type="number" id="f_A" value="0" min="0" oninput="recalc()"><span class="ub">mm</span></div></div>
+        <div class="field"><label>Schenkel B <span id="t_B" class="ai-tag hidden">KI</span></label><div class="uw"><input type="number" id="f_B" value="0" min="0" oninput="recalc()"><span class="ub">mm</span></div></div>
+        <div class="field"><label>Schenkel C <span id="t_C" class="ai-tag hidden">KI</span></label><div class="uw"><input type="number" id="f_C" value="0" min="0" oninput="recalc()"><span class="ub">mm</span></div><div class="fhint">0 = kein</div></div>
+      </div>
+    </div>
+    <div id="dimK" class="hidden">
+      <div class="al al-w" style="font-size:11px;margin-bottom:10px"><strong>Abwicklungsbreite</strong> = alle Schenkel addieren (z.B. 250+130+20 = 400 mm)</div>
+      <div class="fg">
+        <div class="field"><label>L&auml;nge <span id="t_kL" class="ai-tag hidden">KI</span></label><div class="uw"><input type="number" id="f_kL" value="0" min="0" oninput="recalc()"><span class="ub">mm</span></div></div>
+        <div class="field"><label>Abwicklungsbreite <span id="t_kA" class="ai-tag hidden">KI</span></label><div class="uw"><input type="number" id="f_kA" value="0" min="0" oninput="recalc()"><span class="ub">mm</span></div></div>
+      </div>
+    </div>
+    <div class="abw"><span>Abwicklungsfl&auml;che</span><strong id="abwVal">&ndash;</strong></div>
+  </div>
+</div>
+
+<!-- Extras -->
+<div class="card">
+  <div class="chdr"><span class="ico">&#9874;</span><div><h2>Mehraufwand</h2></div></div>
+  <div class="cbody">
+    <div class="extras">
+      <div class="extra"><h4>&#128295; Kantungen</h4><p>Biegevorg&auml;nge (L=2, U/Z=3)</p>
+        <div class="stepper"><button onclick="stp('ka',-1)">&minus;</button><input type="number" id="f_ka" value="2" min="0" oninput="recalc()"><button onclick="stp('ka',1)">+</button></div>
+        <div class="sh" id="h_ka"></div>
+      </div>
+      <div class="extra"><h4>&#9986; Ausschnitte</h4>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div><div style="font-size:11px;font-weight:700;margin-bottom:3px">Einfach</div><div class="stepper"><button onclick="stp('asE',-1)">&minus;</button><input type="number" id="f_asE" value="0" min="0" oninput="recalc()"><button onclick="stp('asE',1)">+</button></div></div>
+          <div><div style="font-size:11px;font-weight:700;margin-bottom:3px">Komplex</div><div class="stepper"><button onclick="stp('asK',-1)">&minus;</button><input type="number" id="f_asK" value="0" min="0" oninput="recalc()"><button onclick="stp('asK',1)">+</button></div></div>
+        </div><div class="sh" id="h_as"></div>
+      </div>
+      <div class="extra"><h4>&#128293; Schwei&szlig;n&auml;hte</h4><p>Zus&auml;tzlich</p>
+        <div class="stepper"><button onclick="stp('sw',-1)">&minus;</button><input type="number" id="f_sw" value="0" min="0" oninput="recalc()"><button onclick="stp('sw',1)">+</button></div>
+        <div class="sh" id="h_sw"></div>
+      </div>
+      <div class="extra"><h4>&#128203; Sonstiges</h4><p>Express, Sonderform&hellip;</p>
+        <div class="tog" style="margin-bottom:8px">
+          <button id="sau0" class="on" onclick="setSau(0)">Kein</button>
+          <button id="sau20" onclick="setSau(20)">+20&euro;</button>
+          <button id="sau50" onclick="setSau(50)">+50&euro;</button>
+          <button id="sauM" onclick="setSauM()">Frei</button>
+        </div>
+        <div class="uw"><input type="number" id="f_sau" value="0" min="0" step="5" oninput="recalc()" readonly style="background:var(--surf);color:var(--mu)"><span class="ub">&euro;</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="brow">
+  <button class="btn btn-gold" onclick="gotoStep(3)">Berechnen &rarr;</button>
+  <button class="btn btn-sec" onclick="gotoStep(1)">&larr; Zur&uuml;ck</button>
+</div>
+</div><!-- /step2 -->
+
+<!-- ══════════════════ STEP 3 ══════════════════ -->
+<div id="step3" class="hidden">
+<div class="card">
+  <div class="res-hdr"><div class="rl">Kalkulation &middot; KPC GmbH</div><div class="rp" id="r_proj">&ndash;</div><div class="rd" id="r_date">&ndash;</div></div>
+  <div class="res-body">
+    <div class="r-desc" id="r_desc">&ndash;</div>
+    <div class="r-det"><h4>EK-Aufschl&uuml;sselung</h4>
+      <div class="rl"><span>Abwicklungsfl&auml;che</span><span class="rv" id="r_abw">&ndash;</span></div>
+      <div class="rl"><span>Material EK-Basis</span><span class="rv" id="r_ekBase">&ndash;</span></div>
+      <div class="rl hidden" id="rl_ka"><span id="rt_ka"></span><span class="rv" id="r_ka"></span></div>
+      <div class="rl hidden" id="rl_asE"><span id="rt_asE"></span><span class="rv" id="r_asE"></span></div>
+      <div class="rl hidden" id="rl_asK"><span id="rt_asK"></span><span class="rv" id="r_asK"></span></div>
+      <div class="rl hidden" id="rl_sw"><span id="rt_sw"></span><span class="rv" id="r_sw"></span></div>
+      <div class="rl hidden" id="rl_sau"><span>Sonstiges</span><span class="rv" id="r_sau"></span></div>
+      <div class="rl b"><span>EK gesamt</span><span class="rv" id="r_ekG">&ndash;</span></div>
+    </div>
+    <div class="rrow sep"><span class="rl2">EK + <span id="r_zul">31</span>% Zuschlag</span><span class="rr" id="r_vkm">&ndash;</span></div>
+    <div class="rrow"><span class="rl2">Silikon (<span id="r_silLfm">1.0</span> lfm)</span><span class="rr" id="r_silE">&ndash;</span></div>
+    <div class="rrow"><span class="rl2">Aufma&szlig;</span><span class="rr" id="r_aufm">&ndash;</span></div>
+    <div class="rrow sep"><span class="rl2">Montage</span><span class="rr" id="r_mont">&ndash;</span></div>
+    <div class="rrow tot"><span class="rl2">VK netto</span><span class="rr" id="r_ges">&ndash;</span></div>
+    <div class="rrow brut"><span class="rl2">inkl. 19% MwSt.</span><span class="rr" id="r_brut">&ndash;</span></div>
+  </div>
+</div>
+<div id="editBanner" class="al al-w hidden" style="margin-bottom:12px">
+  &#9998; <strong>Bearbeiten:</strong> Du änderst eine bestehende Position. Klick auf <em>Speichern</em> um zu übernehmen.
+</div>
+<div class="brow">
+  <button class="btn btn-gold" id="addMappeBtn" onclick="addToMappe()">&#128203; <span id="addMappeLbl">In Mappe + neue Blende</span></button>
+  <button class="btn btn-warm" onclick="openAngebotDirekt()">&#128196; Einzel-Angebot</button>
+  <button class="btn btn-kpc" onclick="dlKalk()">&#128229; Kalkulation</button>
+  <button class="btn btn-sec" onclick="gotoStep(2)">&larr; Bearbeiten</button>
+</div>
+</div><!-- /step3 -->
+
+</div><!-- /page -->
+
+<!-- MAPPE MODAL -->
+<div class="modal-bg" id="mapModal">
+<div class="modal" style="max-width:780px">
+  <div class="mhdr">
+    <div><div class="mt">KPC GmbH</div><div class="mh" id="mapModalTitle">Angebotsmappe</div></div>
+    <button class="mclose" onclick="closeMappe()">&#x2715;</button>
+  </div>
+  <div class="mbody">
+
+    <!-- Project / Collection selector -->
+    <div id="projTabs" class="proj-tabs"></div>
+    <div style="display:flex;gap:8px;margin:0 0 14px">
+      <input type="text" id="newProjName" placeholder="Neues Projekt anlegen..." style="flex:1;font-size:13px;padding:8px 10px;border:2px solid var(--bd);border-radius:6px;font-family:var(--sans)">
+      <button class="btn" style="width:auto;padding:8px 14px;background:var(--gold);color:var(--kpc);min-height:0;font-size:12px" onclick="addProject()">+ Anlegen</button>
+    </div>
+
+    <!-- Empty state -->
+    <div id="mapEmpty" class="al al-i" style="text-align:center;padding:24px">
+      <p style="font-size:14px;margin-bottom:6px">&#128203; <strong>Keine Positionen in diesem Projekt</strong></p>
+      <p style="font-size:12px">Erfasse Blenden und w&auml;hle &laquo;In Mappe&raquo;</p>
+    </div>
+
+    <!-- List with selection -->
+    <div id="mapList" class="hidden">
+      <!-- Selection bar -->
+      <div class="sel-bar">
+        <label class="sel-all">
+          <input type="checkbox" id="selAllChk" onchange="toggleSelAll()">
+          <span id="selAllLbl">Alle ausw&auml;hlen</span>
+        </label>
+        <span id="selInfo" style="margin-left:auto;font-size:11px;color:var(--mu)"></span>
+      </div>
+
+      <div id="mapItems"></div>
+
+      <!-- Selected total -->
+      <div class="mprice" style="margin-top:14px">
+        <div class="mpr"><span id="selSummeLbl">Summe (alle ausgew&auml;hlt)</span><span class="mv" id="mapNetto">&ndash;</span></div>
+        <div class="mpr"><span style="color:var(--mu)">19% MwSt.</span><span class="mv" style="color:var(--mu)" id="mapMwst">&ndash;</span></div>
+        <div class="mpr tot"><span>Gesamt brutto</span><span class="mv" id="mapBrutto">&ndash;</span></div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:14px">
+        <button class="btn btn-warm" id="agBtn" onclick="openAngebotMappe()">&#128196; Angebot aus ausgew&auml;hlten Positionen</button>
+        <button class="btn btn-sec" onclick="closeMappe()">Weiter erfassen</button>
+        <button class="btn-lnk" onclick="deleteSelected()" style="color:#a04040">Ausgew&auml;hlte l&ouml;schen</button>
+        <button class="btn-lnk" onclick="deleteCurrentProject()" style="color:#a04040">Aktuelles Projekt l&ouml;schen</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ANGEBOT MODAL -->
+<div class="modal-bg" id="agModal">
+<div class="modal">
+  <div class="mhdr"><div><div class="mt">KPC GmbH</div><div class="mh">Angebot erstellen</div></div><button class="mclose" onclick="closeAg()">&#x2715;</button></div>
+  <div class="mbody">
+    <div class="msec">Kunde</div>
+    <div class="fg g1" style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px">
+      <div class="field"><label>Firma</label><input type="text" id="ag_firma" placeholder="Musterfirma GmbH"></div>
+      <div class="field"><label>Ansprechpartner</label><input type="text" id="ag_ansp" placeholder="Max Mustermann"></div>
+      <div class="field"><label>E-Mail</label><input type="email" id="ag_mail" placeholder="kunde@firma.de" inputmode="email"></div>
+      <div class="field"><label>Stra&szlig;e</label><input type="text" id="ag_str" placeholder="Musterstra&szlig;e 1"></div>
+      <div class="field"><label>PLZ / Ort</label><input type="text" id="ag_ort" placeholder="36041 Fulda"></div>
+    </div>
+    <div class="fg">
+      <div class="field"><label>Angebotsnr.</label><input type="text" id="ag_nr"></div>
+      <div class="field"><label>Datum</label><input type="text" id="ag_dat"></div>
+    </div>
+    <div class="field" style="margin-top:8px;margin-bottom:10px"><label>G&uuml;ltig bis</label><input type="text" id="ag_guel"></div>
+    <div class="msec">Leistung</div>
+    <div class="field" style="margin-bottom:8px"><label>Bezeichnung</label><input type="text" id="ag_bez"></div>
+    <div class="field" style="margin-bottom:10px"><label>Bemerkung</label><textarea id="ag_text" rows="3" placeholder="z.B. Lieferung und Montage inkl. Silikon"></textarea></div>
+    <div class="mprice">
+      <div class="mpr"><span>Netto</span><span class="mv" id="ag_netto">&ndash;</span></div>
+      <div class="mpr"><span style="color:var(--mu)">19% MwSt.</span><span class="mv" style="color:var(--mu)" id="ag_mwst">&ndash;</span></div>
+      <div class="mpr tot"><span>Gesamt</span><span class="mv" id="ag_brutto">&ndash;</span></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <button class="btn btn-warm" onclick="mailAngebot()">&#9993; Per Mail senden</button>
+      <button class="btn btn-kpc" onclick="dlAngebot()">&#128196; Als HTML speichern</button>
+      <button class="btn btn-sec" onclick="closeAg()">Abbrechen</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════
+var profile='L', imgB64=null, imgType='image/jpeg', isPDF=false;
+var method='photo';
+var apiKey=localStorage.getItem('kpc_apikey')||'';
+var mappe=JSON.parse(localStorage.getItem('kpc_mappe')||'[]');
+var agMode='single';
+
+// ── Helpers ──
+var el=function(id){return document.getElementById(id);};
+var g=function(id){return parseFloat(el(id).value)||0;};
+var de2=function(n){return n.toLocaleString('de-DE',{minimumFractionDigits:2,maximumFractionDigits:2});};
+var fe=function(n){return de2(n)+' \u20AC';};
+function toast(msg,ms){var t=el('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},ms||2200);}
+function showErr(msg){el('errBox').innerHTML='&#9888; '+msg;el('errBox').classList.remove('hidden');}
+function hideErr(){el('errBox').classList.add('hidden');}
+
+// ══════════════════════════════════════════════════════════
+// SETTINGS
+// ══════════════════════════════════════════════════════════
+function toggleSP(){el('sPanel').classList.toggle('open');updateApiStat();}
+function saveApiKey(){
+  var k=el('apiKeyIn').value.trim();
+  if(!k){apiKey='';localStorage.removeItem('kpc_apikey');updateApiStat();toast('Key entfernt');return;}
+  if(!k.startsWith('AIza')){alert('Ung\u00FCltiger Key &mdash; Google Gemini-Keys beginnen mit "AIza".');return;}
+  apiKey=k;localStorage.setItem('kpc_apikey',k);updateApiStat();
+  el('apiKeyIn').value='\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022'+k.slice(-4);
+  toast('\u2713 API-Key gespeichert');
+}
+function updateApiStat(){
+  var s=el('apiStat');if(!s)return;
+  if(apiKey){s.textContent='\u2713 OK';s.style.color='#7ed4a8';}
+  else{s.textContent='fehlt';s.style.color='#e0a0a0';}
+}
+
+// ══════════════════════════════════════════════════════════
+// STEPS
+// ══════════════════════════════════════════════════════════
+function gotoStep(n){
+  [1,2,3].forEach(function(i){
+    el('step'+i).classList.toggle('hidden',i!==n);
+    el('si'+i).classList.toggle('active',i<=n);
+    el('si'+i).classList.toggle('done',i<n);
+  });
+  [1,2].forEach(function(i){el('sl'+i).classList.toggle('done',i<n);});
+  if(n===2){
+    // Show reference image if available
+    if(imgB64&&!isPDF){el('refCard').classList.remove('hidden');el('refImg').src='data:'+imgType+';base64,'+imgB64;}
+    else{el('refCard').classList.add('hidden');}
+    setTimeout(drawBV,80);
+    recalc();
+  }
+  if(n===3){recalc();}
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ══════════════════════════════════════════════════════════
+// METHOD SELECT
+// ══════════════════════════════════════════════════════════
+function selMethod(m){
+  method=m;
+  ['photo','draw','file'].forEach(function(x){
+    el('mt-'+x).classList.toggle('active',x===m);
+    el('m-'+x).classList.toggle('hidden',x!==m);
+  });
+  el('prevArea').classList.add('hidden');
+  hideErr();
+  if(m==='draw')setTimeout(initCanvas,50);
+}
+
+// ══════════════════════════════════════════════════════════
+// FILE / PHOTO
+// ══════════════════════════════════════════════════════════
+function onDrop(e){e.preventDefault();el('dropZone'+(e.target.id||'')).classList.remove('drag');if(e.dataTransfer.files[0])loadFile(e.dataTransfer.files[0]);}
+function loadFile(file){
+  if(!file)return;
+  isPDF=(file.type==='application/pdf'||file.name.toLowerCase().endsWith('.pdf'));
+  imgType=isPDF?'application/pdf':(file.type||'image/jpeg');
+  var r=new FileReader();
+  r.onload=function(e){
+    if(isPDF){
+      // Gemini supports PDFs up to 20MB inline. Check size.
+      if(file.size>18*1024*1024){
+        showErr('PDF zu gro\u00DF (max. 18 MB). Bitte kleinere Datei oder JPG verwenden.');
+        clearFile();
+        return;
+      }
+      imgB64=e.target.result.split(',')[1];
+      el('prevImg').style.display='none';el('pdfBox').classList.remove('hidden');el('pdfName').textContent=file.name;
+    } else {
+      var img=new Image();
+      img.onload=function(){
+        var max=1400,w=img.width,h=img.height;
+        if(w>max||h>max){if(w>h){h=Math.round(h*max/w);w=max;}else{w=Math.round(w*max/h);h=max;}}
+        var c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);
+        var url=c.toDataURL('image/jpeg',.9);
+        imgB64=url.split(',')[1];imgType='image/jpeg';
+        el('prevImg').src=url;el('prevImg').style.display='block';el('pdfBox').classList.add('hidden');
+      };img.src=e.target.result;
+    }
+    el('prevName').textContent=file.name;
+    el('prevArea').classList.remove('hidden');
+    el('spinArea').classList.add('hidden');
+    hideErr();
+    el('prevHint').textContent='KI liest Ma\u00DFe und Profiltyp automatisch aus der Zeichnung.';
+    el('aiBtn').classList.remove('hidden');el('manBtn').classList.add('hidden');
+    setTimeout(runAI,400);
+  };r.readAsDataURL(file);
+}
+function clearFile(){
+  imgB64=null;isPDF=false;
+  el('prevArea').classList.add('hidden');el('spinArea').classList.add('hidden');
+  el('fileIn').value='';el('camIn').value='';hideErr();
+}
+
+// ══════════════════════════════════════════════════════════
+// DRAWING CANVAS
+// ══════════════════════════════════════════════════════════
+var DC=null,DCTX=null,drawColor='#1a4480',sw=2.5,tool='pen';
+var strokes=[],cur=null,p1=null,drawing=false,npOn=false;
+var dimPending=null,txtPending=null;
+var HINTS={
+  pen:'&#9999; Freihand &mdash; zeichne mit Pencil oder Finger',
+  line:'&#9135; Linie / Lineal &mdash; ziehen f\u00FCr gerade Linie',
+  rect:'&#9645; Rechteck &mdash; ziehen f\u00FCr Kasten',
+  dash:'&#9482; Hilfslinie &mdash; gestrichelt, ziehen',
+  dim:'\u2194 Ma\u00DFlinie &mdash; ersten Punkt tippen, zweiten Punkt tippen \u2192 Ma\u00DF eingeben',
+  erase:'&#9633; Radieren &mdash; \u00FCber Linien fahren'
+};
+
+function initCanvas(){
+  if(DC)return;
+  DC=el('drawCanvas');DCTX=DC.getContext('2d');
+  sizeCanvas();
+  window.addEventListener('resize',function(){sizeCanvas();redraw();});
+  DC.addEventListener('pointerdown',pd,{passive:false});
+  DC.addEventListener('pointermove',pm,{passive:false});
+  DC.addEventListener('pointerup',pu,{passive:false});
+  DC.addEventListener('pointercancel',pu,{passive:false});
+}
+function sizeCanvas(){
+  if(!DC)return;
+  var dpr=window.devicePixelRatio||1;
+  var rect=DC.parentElement.getBoundingClientRect();
+  var W=rect.width,H=Math.max(380,Math.round(W*.72));
+  DC.style.width=W+'px';DC.style.height=H+'px';
+  DC.width=W*dpr;DC.height=H*dpr;
+  DCTX.setTransform(1,0,0,1,0,0);
+  DCTX.scale(dpr,dpr);
+  DCTX.lineCap='round';DCTX.lineJoin='round';
+  redraw();
+}
+function gpp(e){var r=DC.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top};}
+function selTool(t,btn){
+  tool=t;
+  document.querySelectorAll('.tbtn[id^="t-"],.sw-btn').forEach(function(b){if(b.id!=='finBtn')b.classList.remove('on');});
+  if(btn&&btn.id!=='finBtn')btn.classList.add('on');
+  el('thint').innerHTML=HINTS[t]||'';
+  DC.style.cursor=t==='erase'?'cell':'crosshair';
+  dimPending=null;
+}
+function selColor(c,btn){
+  drawColor=c;
+  document.querySelectorAll('.swatch').forEach(function(e){e.classList.remove('on');});
+  btn.classList.add('on');
+}
+function selSW(w,btn){
+  sw=w;
+  document.querySelectorAll('.sw-btn').forEach(function(e){e.classList.remove('on');});
+  btn.classList.add('on');
+}
+function pd(e){
+  e.preventDefault();
+  var p=gpp(e);
+  if(tool==='text'){
+    txtPending={x:p.x,y:p.y};
+    el('txtInput').value='';
+    el('txtOverlay').classList.remove('hidden');
+    setTimeout(function(){el('txtInput').focus();},50);
+    return;
+  }
+  if(tool==='erase'){drawing=true;eraseAt(p);return;}
+  if(tool==='dim'){
+    if(!dimPending){dimPending={p1:p};drawing=true;cur={tool:'dim-preview',p1:p,p2:p,color:drawColor,sw:sw};}
+    else{
+      var d=dimPending;dimPending=null;drawing=false;cur=null;
+      // Show input dialog
+      var saved={p1:d.p1,p2:p,color:drawColor,sw:sw};
+      el('dimInput').value='';
+      el('dimOverlay').classList.remove('hidden');
+      el('dimInput').focus();
+      el('dimOverlay')._saved=saved;
+    }
+    return;
+  }
+  drawing=true;p1=p;
+  if(tool==='pen'){cur={tool:'pen',color:drawColor,sw:sw,pts:[p]};}
+  else{cur={tool:tool,color:drawColor,sw:sw,p1:p,p2:p};}
+}
+function pm(e){
+  if(!drawing)return;e.preventDefault();
+  var p=gpp(e);
+  if(tool==='erase'){eraseAt(p);return;}
+  if(tool==='pen'){cur.pts.push(p);redraw();return;}
+  if(tool==='dim'){if(cur){cur.p2=p;redraw();}return;}
+  cur.p2=p;redraw();
+}
+function pu(e){
+  if(!drawing)return;drawing=false;
+  var ok=false;
+  if(tool==='erase'){cur=null;return;}
+  if(tool==='dim'&&cur){cur=null;return;}
+  if(tool==='pen'&&cur&&cur.pts.length>1)ok=true;
+  else if((tool==='line'||tool==='rect'||tool==='dash')&&cur){var dx=cur.p2.x-cur.p1.x,dy=cur.p2.y-cur.p1.y;ok=Math.sqrt(dx*dx+dy*dy)>4;}
+
+  if(ok)strokes.push(cur);
+  cur=null;redraw();
+}
+
+function eraseAt(p){
+  var r=18;
+  strokes=strokes.filter(function(s){
+    if(s.tool==='pen')return!s.pts.some(function(q){return Math.hypot(q.x-p.x,q.y-p.y)<r;});
+    if(s.tool==='symbol')return Math.hypot(s.x-p.x,s.y-p.y)>r*2;
+    if(s.tool==='text')return Math.hypot(s.x-p.x,s.y-p.y)>r*2;
+    if(s.p1&&s.p2)return dSeg(p,s.p1,s.p2)>r;
+    return true;
+  });
+  redraw();
+}
+function dSeg(p,a,b){var dx=b.x-a.x,dy=b.y-a.y;if(!dx&&!dy)return Math.hypot(p.x-a.x,p.y-a.y);var t=Math.max(0,Math.min(1,((p.x-a.x)*dx+(p.y-a.y)*dy)/(dx*dx+dy*dy)));return Math.hypot(p.x-a.x-t*dx,p.y-a.y-t*dy);}
+
+function undo(){if(strokes.length){strokes.pop();redraw();}}
+function clearAll(){if(!strokes.length)return;if(confirm('Zeichnung l\u00F6schen?')){strokes=[];redraw();}}
+
+function redraw(){
+  if(!DCTX)return;
+  var W=parseFloat(DC.style.width),H=parseFloat(DC.style.height);
+  DCTX.clearRect(0,0,W,H);
+  strokes.forEach(function(s){drawS(DCTX,s);});
+  if(cur)drawS(DCTX,cur);
+}
+
+function drawS(ctx,s){
+  ctx.save();
+  ctx.strokeStyle=s.color||'#1a4480';
+  ctx.fillStyle=s.color||'#1a4480';
+  ctx.lineWidth=s.sw||2.5;
+  ctx.lineCap='round';ctx.lineJoin='round';
+
+  if(s.tool==='pen'){
+    var pts=s.pts;if(pts.length<2){ctx.beginPath();ctx.arc(pts[0].x,pts[0].y,(s.sw||2.5)/2,0,Math.PI*2);ctx.fill();ctx.restore();return;}
+    ctx.beginPath();ctx.moveTo(pts[0].x,pts[0].y);for(var i=1;i<pts.length;i++)ctx.lineTo(pts[i].x,pts[i].y);ctx.stroke();
+  } else if(s.tool==='line'){
+    ctx.beginPath();ctx.moveTo(s.p1.x,s.p1.y);ctx.lineTo(s.p2.x,s.p2.y);ctx.stroke();
+  } else if(s.tool==='rect'){
+    var x=Math.min(s.p1.x,s.p2.x),y=Math.min(s.p1.y,s.p2.y),w=Math.abs(s.p2.x-s.p1.x),h=Math.abs(s.p2.y-s.p1.y);
+    ctx.strokeRect(x,y,w,h);
+  } else if(s.tool==='dash'||s.tool==='dash-preview'){
+    ctx.save();ctx.setLineDash([8,5]);ctx.beginPath();ctx.moveTo(s.p1.x,s.p1.y);ctx.lineTo(s.p2.x,s.p2.y);ctx.stroke();ctx.restore();
+  } else if(s.tool==='dim'||s.tool==='dim-preview'){
+    drawDim(ctx,s.p1,s.p2,s.label||'',s.sw||1.5);
+  } else if(s.tool==='text'){
+    ctx.font='700 15px "Roboto Condensed",sans-serif';
+    ctx.fillText(s.text||'',s.x,s.y);
+  } else if(s.tool==='symbol'){
+    // legacy symbol - skip
+  }
+  ctx.restore();
+}
+
+function drawDim(ctx,p1,p2,label,lw){
+  ctx.strokeStyle=ctx.strokeStyle;ctx.fillStyle=ctx.strokeStyle;ctx.lineWidth=lw||1.5;
+  ctx.beginPath();ctx.moveTo(p1.x,p1.y);ctx.lineTo(p2.x,p2.y);ctx.stroke();
+  arrowHead(ctx,p1,p2,8);arrowHead(ctx,p2,p1,8);
+  // Tick marks
+  var dx=p2.x-p1.x,dy=p2.y-p1.y,len=Math.sqrt(dx*dx+dy*dy)||1;
+  var nx=-dy/len*5,ny=dx/len*5;
+  ctx.beginPath();ctx.moveTo(p1.x-nx,p1.y-ny);ctx.lineTo(p1.x+nx,p1.y+ny);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(p2.x-nx,p2.y-ny);ctx.lineTo(p2.x+nx,p2.y+ny);ctx.stroke();
+  if(label){
+    var mx=(p1.x+p2.x)/2,my=(p1.y+p2.y)/2;
+    var ang=Math.atan2(dy,dx);if(Math.abs(ang)>Math.PI/2)ang+=Math.PI;
+    ctx.save();ctx.translate(mx,my);ctx.rotate(ang);
+    ctx.font='700 13px "Roboto Condensed",sans-serif';
+    var tw=ctx.measureText(label).width;
+    ctx.fillStyle='rgba(255,254,248,.95)';ctx.fillRect(-tw/2-4,-18,tw+8,16);
+    ctx.fillStyle=ctx.strokeStyle;
+    ctx.textAlign='center';ctx.fillText(label,0,-5);
+    ctx.restore();
+  }
+}
+function arrowHead(ctx,from,to,size){
+  var ang=Math.atan2(to.y-from.y,to.x-from.x);
+  ctx.beginPath();ctx.moveTo(to.x,to.y);
+  ctx.lineTo(to.x-size*Math.cos(ang-Math.PI/6),to.y-size*Math.sin(ang-Math.PI/6));
+  ctx.lineTo(to.x-size*Math.cos(ang+Math.PI/6),to.y-size*Math.sin(ang+Math.PI/6));
+  ctx.closePath();ctx.fill();
+}
+
+// drawProfileSym removed (3D drag tools no longer used)
+
+// DIM dialog
+function confirmDim(){
+  var v=el('dimInput').value.trim();
+  if(v){
+    if(/^\d+([.,]\d+)?$/.test(v))v+=' mm';
+    var saved=el('dimOverlay')._saved;
+    if(saved){strokes.push({tool:'dim',p1:saved.p1,p2:saved.p2,label:v,color:saved.color,sw:saved.sw||1.5});redraw();}
+  }
+  el('dimOverlay').classList.add('hidden');
+}
+function cancelDim(){el('dimOverlay').classList.add('hidden');dimPending=null;cur=null;}
+function confirmTxt(){
+  var t=el('txtInput').value.trim();
+  if(t&&txtPending){strokes.push({tool:'text',text:t,x:txtPending.x,y:txtPending.y,color:drawColor,sw:sw});redraw();}
+  el('txtOverlay').classList.add('hidden');txtPending=null;
+}
+function cancelTxt(){el('txtOverlay').classList.add('hidden');txtPending=null;}
+
+// Numpad
+function toggleNP(){npOn=!npOn;el('numPad').classList.toggle('show',npOn);el('npBtn').classList.toggle('on',npOn);}
+function npi(v){
+  var inp=document.activeElement;
+  if(!inp||inp.tagName!=='INPUT'||(inp!==el('dimInput')&&inp!==el('txtInput'))){inp=el('dimInput');}
+  if(v==='BS'){inp.value=inp.value.slice(0,-1);}
+  else{inp.value=(inp.value||'')+v;}
+}
+function npiOK(){confirmDim();}
+
+// Finish drawing → export as image
+function finishDraw(){
+  if(!strokes.length){alert('Bitte erst zeichnen.');return;}
+  var W=parseFloat(DC.style.width),H=parseFloat(DC.style.height);
+  var out=document.createElement('canvas');out.width=W;out.height=H;
+  var octx=out.getContext('2d');
+  octx.fillStyle='#fffef8';octx.fillRect(0,0,W,H);
+  octx.strokeStyle='rgba(196,164,107,.15)';octx.lineWidth=1;
+  for(var x=0;x<W;x+=25){octx.beginPath();octx.moveTo(x,0);octx.lineTo(x,H);octx.stroke();}
+  for(var y=0;y<H;y+=25){octx.beginPath();octx.moveTo(0,y);octx.lineTo(W,y);octx.stroke();}
+  octx.lineCap='round';octx.lineJoin='round';
+  strokes.forEach(function(s){drawS(octx,s);});
+  var url=out.toDataURL('image/png');
+  isPDF=false;imgType='image/png';imgB64=url.split(',')[1];
+  el('prevImg').src=url;el('prevImg').style.display='block';
+  el('pdfBox').classList.add('hidden');
+  el('prevName').textContent='Zeichnung';
+  el('prevHint').textContent='Zeichnung fertig.';
+  el('prevArea').classList.remove('hidden');
+  el('aiBtn').classList.remove('hidden');el('manBtn').classList.add('hidden');
+  el('spinArea').classList.add('hidden');hideErr();
+  setTimeout(runAI,300);
+}
+
+// ══════════════════════════════════════════════════════════
+// AI ANALYSIS (Zeichnungen + Dateien, NICHT Fotos)
+// ══════════════════════════════════════════════════════════
+async function runAI(){
+  if(!imgB64){showErr('Kein Bild geladen.');return;}
+  if(!apiKey){
+    showErr('Kein API-Key gespeichert. Bitte oben &uuml;ber das &#9881;-Symbol einen Google Gemini API-Key eintragen (kostenlos auf <a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com/apikey</a>).');
+    el('sPanel').classList.add('open');
+    el('manBtn').classList.remove('hidden');
+    el('spinArea').classList.add('hidden');
+    return;
+  }
+  el('prevArea').classList.remove('hidden');
+  el('aiBtn').classList.add('hidden');
+  el('spinArea').classList.remove('hidden');
+  hideErr();
+
+  var prompt='Du bist Experte fuer Grosskuechen-Edelstahlblenden bei KPC GmbH. '
+    +'Analysiere dieses Bild und antworte AUSSCHLIESSLICH mit einem g\u00FCltigen JSON-Objekt. KEIN Text davor oder danach. KEINE Backticks. KEINE Markdown-Formatierung. NUR das JSON. '
+    +'Es kann zwei Arten von Bildern sein: '
+    +'(A) Technische Zeichnung/Skizze einer Blende mit eingezeichneten Massen \u2192 lies Masse direkt ab. '
+    +'(B) Foto einer Einbausituation (Wand, Spalt, Tisch, Geraet) \u2192 schlage sinnvolle Blende vor und schaetze plausible Masse. '
+    +'Antwortformat (genau dieses JSON, alle Felder zwingend): '
+    +'{"profilTyp":"L","material":"1mm","laenge":0,"schenkelA":0,"schenkelB":0,"schenkelC":0,'
+    +'"abwicklungBreite":0,"ecken":"offen","kantungen":2,"ausschnitteEinfach":0,'
+    +'"ausschnitteKomplex":0,"schweissnaehte":0,"silikon":1.0,"hinweis":"max 80 Zeichen Beschreibung"} '
+    +'Werte: profilTyp=L oder U oder Z oder K (L=2 Schenkel Wandanschluss, U=3 Schenkel Fuellstueck, Z=Stufenprofil, K=Komplex/Freiform). '
+    +'material=1mm oder 1.5mm oder flat. ecken=offen oder versch. Alle Masse in mm als Aussenmasse. '
+    +'Im Feld hinweis kurze Beschreibung was du erkennst oder vorschlaegst.';
+
+  try{
+    // Gemini API: model + key in URL, body has structured contents
+    var url='https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key='+encodeURIComponent(apiKey);
+    var resp=await fetch(url,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        contents:[{
+          parts:[
+            {text:prompt},
+            {inline_data:{mime_type:imgType,data:imgB64}}
+          ]
+        }],
+        generationConfig:{
+          temperature:0.2,
+          maxOutputTokens:600,
+          responseMimeType:'application/json'
+        }
+      })
+    });
+
+    var raw=await resp.text();
+    console.log('Gemini HTTP status:',resp.status);
+    console.log('Gemini raw response:',raw.substring(0,800));
+
+    if(!resp.ok){
+      var errMsg='HTTP '+resp.status;
+      try{var e=JSON.parse(raw);if(e.error&&e.error.message)errMsg=e.error.message;}catch(_){}
+      throw new Error(errMsg);
+    }
+
+    var data=JSON.parse(raw);
+
+    // Extract text from Gemini response
+    var txt='';
+    if(data.candidates&&data.candidates.length){
+      var cand=data.candidates[0];
+      if(cand.content&&cand.content.parts){
+        cand.content.parts.forEach(function(p){if(p.text)txt+=p.text;});
+      }
+    }
+    if(!txt)throw new Error('Leere Antwort von Gemini');
+
+    // Find JSON in text (in case there's extra)
+    var clean=txt.replace(/```json/g,'').replace(/```/g,'').trim();
+    var m=clean.match(/\{[\s\S]*\}/);
+    if(!m)throw new Error('Kein JSON in Antwort gefunden');
+
+    var parsed;
+    try{parsed=JSON.parse(m[0]);}
+    catch(e){
+      // Try to fix common issues
+      var fixed=m[0].replace(/,\s*\}/g,'}').replace(/,\s*\]/g,']');
+      parsed=JSON.parse(fixed);
+    }
+    applyAI(parsed);
+  }catch(err){
+    console.error('Gemini AI error:',err);
+    el('spinArea').classList.add('hidden');
+    el('aiBtn').classList.remove('hidden');
+    el('manBtn').classList.remove('hidden');
+    var msg=err.message||'Unbekannter Fehler';
+    var hint='';
+    if(msg.indexOf('API key')>=0||msg.indexOf('API_KEY')>=0||msg.indexOf('PERMISSION')>=0){
+      hint='<br><br>Der API-Key scheint ung\u00FCltig. Bitte einen neuen Key auf <a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com/apikey</a> erstellen.';
+    } else if(msg.indexOf('quota')>=0||msg.indexOf('RESOURCE_EXHAUSTED')>=0||msg.indexOf('429')>=0){
+      hint='<br><br>Tageslimit erreicht (1.000 Anfragen/Tag). Reset um 9:00 Uhr deutscher Zeit.';
+    } else if(msg.indexOf('SAFETY')>=0){
+      hint='<br><br>Bild wurde von Gemini blockiert. Anderes Bild probieren.';
+    }
+    showErr('KI-Analyse fehlgeschlagen: '+msg+hint+'<br><br><strong>Tipp:</strong> Werte manuell eintragen oder anderes Bild probieren.');
+  }
+}
+function applyAI(ai){
+  el('spinArea').classList.add('hidden');
+  el('aiAlertBox').classList.remove('hidden');
+  var p=String(ai.profilTyp||'L').toUpperCase();if(p==='KOMPLEX')p='K';
+  selProfile(p);
+  if(ai.material)el('f_mat').value=ai.material;
+  if(ai.ecken)el('f_ecke').value=String(ai.ecken).indexOf('versch')>=0?'versch':'offen';
+  if(p==='K'){if(ai.laenge){el('f_kL').value=ai.laenge;aitag('t_kL');}if(ai.abwicklungBreite){el('f_kA').value=ai.abwicklungBreite;aitag('t_kA');}}
+  else{
+    if(ai.laenge){el('f_L').value=ai.laenge;aitag('t_L');}
+    if(ai.schenkelA){el('f_A').value=ai.schenkelA;aitag('t_A');}
+    if(ai.schenkelB){el('f_B').value=ai.schenkelB;aitag('t_B');}
+    el('f_C').value=ai.schenkelC||0;if(ai.schenkelC)aitag('t_C');
+  }
+  if(ai.kantungen!==undefined)el('f_ka').value=ai.kantungen;
+  if(ai.ausschnitteEinfach)el('f_asE').value=ai.ausschnitteEinfach;
+  if(ai.ausschnitteKomplex)el('f_asK').value=ai.ausschnitteKomplex;
+  if(ai.schweissnaehte)el('f_sw').value=ai.schweissnaehte;
+  if(ai.silikon)el('f_sil').value=ai.silikon;
+  if(ai.hinweis&&!el('f_name').value)el('f_name').value=ai.hinweis;
+  aitag('t_mat');aitag('t_ecke');
+  recalc();
+  gotoStep(2);
+}
+function aitag(id){var e=el(id);if(e)e.classList.remove('hidden');}
+
+// ══════════════════════════════════════════════════════════
+// PROFILE SELECTOR (with 3D canvases)
+// ══════════════════════════════════════════════════════════
+var PROFILES=[
+  {v:'L',n:'L-Profil',d:'2 Schenkel · Wandanschluss'},
+  {v:'U',n:'U-Profil',d:'3 Schenkel · F\u00FCllst\u00FCck'},
+  {v:'Z',n:'Z-Profil',d:'3 Schenkel · Stufenblende'},
+  {v:'K',n:'Komplex',d:'Freiform · Ausschnitte'}
+];
+function buildProfileGrid(){
+  var g=el('profGrid');g.innerHTML='';
+  PROFILES.forEach(function(p){
+    var div=document.createElement('div');
+    div.className='prof-opt'+(profile===p.v?' sel':'');
+    div.dataset.v=p.v;
+    div.onclick=function(){selProfile(p.v);};
+    var c=document.createElement('canvas');c.width=90;c.height=60;c.style.width='90px';c.style.height='60px';
+    div.appendChild(c);
+    var pn=document.createElement('div');pn.className='pn';pn.textContent=p.n;div.appendChild(pn);
+    var pd=document.createElement('div');pd.className='pd';pd.textContent=p.d;div.appendChild(pd);
+    g.appendChild(div);
+    draw3DProfileIcon(c,p.v,profile===p.v);
+  });
+}
+function selProfile(v){
+  profile=v;
+  document.querySelectorAll('.prof-opt').forEach(function(e){
+    var on=e.dataset.v===v;
+    e.classList.toggle('sel',on);
+    var c=e.querySelector('canvas');
+    if(c)draw3DProfileIcon(c,e.dataset.v,on);
+  });
+  el('dimE').classList.toggle('hidden',v==='K');
+  el('dimK').classList.toggle('hidden',v!=='K');
+  var def={L:2,U:3,Z:3,K:5};el('f_ka').value=def[v]||2;
+  recalc();drawBV();
+}
+function draw3DProfileIcon(canvas,v,sel){
+  var ctx=canvas.getContext('2d');
+  var W=canvas.width,H=canvas.height;
+  ctx.clearRect(0,0,W,H);
+  var fc=sel?'#c4a46b':'#5a7aaa';
+  var tc=sel?'#ddc07a':'#7a9abb';
+  var sc=sel?'#8a6030':'#3a5a8a';
+  var t=10,dep=8,dax=dep*.6,day=-dep*.5;
+  ctx.lineCap='round';ctx.lineJoin='round';ctx.lineWidth=1;
+  function face(pts,fill){ctx.beginPath();ctx.moveTo(pts[0][0],pts[0][1]);for(var i=1;i<pts.length;i++)ctx.lineTo(pts[i][0],pts[i][1]);ctx.closePath();ctx.fillStyle=fill;ctx.fill();ctx.strokeStyle='rgba(0,0,0,.25)';ctx.stroke();}
+
+  if(v==='L'){
+    var ox=12,oy=48,L=50;
+    // Horizontal leg
+    face([[ox,oy],[ox+L,oy],[ox+L,oy-t],[ox,oy-t]],fc);
+    face([[ox,oy-t],[ox+dax,oy-t+day],[ox+L+dax,oy-t+day],[ox+L,oy-t]],tc);
+    face([[ox+L,oy-t],[ox+L+dax,oy-t+day],[ox+L+dax,oy+day],[ox+L,oy]],sc);
+    // Vertical leg
+    face([[ox,oy-t],[ox+t,oy-t],[ox+t,oy-t-20],[ox,oy-t-20]],fc);
+    face([[ox,oy-t-20],[ox+dax,oy-t-20+day],[ox+t+dax,oy-t-20+day],[ox+t,oy-t-20]],tc);
+  } else if(v==='U'){
+    var ox=8,oy=50,L=58,h=20;
+    // Bottom
+    face([[ox,oy],[ox+L,oy],[ox+L,oy-t/2],[ox,oy-t/2]],fc);
+    face([[ox,oy-t/2],[ox+dax,oy-t/2+day],[ox+L+dax,oy-t/2+day],[ox+L,oy-t/2]],tc);
+    // Left leg
+    face([[ox,oy-t/2],[ox+t,oy-t/2],[ox+t,oy-t/2-h],[ox,oy-t/2-h]],fc);
+    face([[ox,oy-t/2-h],[ox+dax,oy-t/2-h+day],[ox+t+dax,oy-t/2-h+day],[ox+t,oy-t/2-h]],tc);
+    // Right leg
+    face([[ox+L-t,oy-t/2],[ox+L,oy-t/2],[ox+L,oy-t/2-h],[ox+L-t,oy-t/2-h]],fc);
+    face([[ox+L-t,oy-t/2-h],[ox+L-t+dax,oy-t/2-h+day],[ox+L+dax,oy-t/2-h+day],[ox+L,oy-t/2-h]],tc);
+    face([[ox+L,oy-t/2],[ox+L+dax,oy-t/2+day],[ox+L+dax,oy-t/2-h+day],[ox+L,oy-t/2-h]],sc);
+  } else if(v==='Z'){
+    var ox=8,oy=20,L=60;
+    // Top leg
+    face([[ox,oy],[ox+L*.4,oy],[ox+L*.4,oy+t/2],[ox,oy+t/2]],fc);
+    face([[ox,oy],[ox+dax,oy+day],[ox+L*.4+dax,oy+day],[ox+L*.4,oy]],tc);
+    // Diagonal
+    face([[ox+L*.3,oy+t/2],[ox+L*.7,oy+t+18],[ox+L*.7+t/3,oy+t+18],[ox+L*.3+t/3,oy+t/2]],fc);
+    // Bottom leg
+    face([[ox+L*.6,oy+t+18],[ox+L,oy+t+18],[ox+L,oy+t+18+t/2],[ox+L*.6,oy+t+18+t/2]],fc);
+    face([[ox+L*.6,oy+t+18],[ox+L*.6+dax,oy+t+18+day],[ox+L+dax,oy+t+18+day],[ox+L,oy+t+18]],tc);
+    face([[ox+L,oy+t+18],[ox+L+dax,oy+t+18+day],[ox+L+dax,oy+t+18+t/2+day],[ox+L,oy+t+18+t/2]],sc);
+  } else {
+    // Komplex - show a complex cross-section shape
+    var ox=8,oy=52,L=62,h=32;
+    face([[ox,oy],[ox+L*.4,oy],[ox+L*.4,oy-h*.4],[ox+L*.6,oy-h*.4],[ox+L*.6,oy],[ox+L,oy],[ox+L,oy-h],[ox,oy-h]],fc);
+    face([[ox,oy-h],[ox+dax,oy-h+day],[ox+L+dax,oy-h+day],[ox+L,oy-h]],tc);
+    face([[ox+L,oy],[ox+L+dax,oy+day],[ox+L+dax,oy-h+day],[ox+L,oy-h]],sc);
+    // Cutout indicator
+    ctx.setLineDash([3,3]);ctx.strokeStyle='rgba(0,0,0,.4)';ctx.lineWidth=1;
+    ctx.strokeRect(ox+L*.35,oy-h*.6,L*.3,h*.4);ctx.setLineDash([]);
+  }
+
+  // Label
+  ctx.font='bold 11px sans-serif';
+  ctx.fillStyle=sel?'#2d2926':'#fff';
+  ctx.textAlign='center';ctx.textBaseline='bottom';
+  ctx.fillText(v,W/2,H-1);
+}
+
+// ══════════════════════════════════════════════════════════
+// STEPPERS / SAU
+// ══════════════════════════════════════════════════════════
+function stp(id,d){var e=el('f_'+id);e.value=Math.max(0,(parseInt(e.value)||0)+d);recalc();}
+function setSau(v){['sau0','sau20','sau50','sauM'].forEach(function(i){el(i).classList.remove('on');});el('sau'+v).classList.add('on');var inp=el('f_sau');inp.value=v;inp.readOnly=true;inp.style.background='var(--surf)';inp.style.color='var(--mu)';recalc();}
+function setSauM(){['sau0','sau20','sau50'].forEach(function(i){el(i).classList.remove('on');});el('sauM').classList.add('on');var inp=el('f_sau');inp.readOnly=false;inp.value='';inp.style.background='';inp.style.color='';inp.focus();}
+
+// ══════════════════════════════════════════════════════════
+// CALCULATION
+// ══════════════════════════════════════════════════════════
+function getAW(){
+  if(profile==='K'){var L=g('f_kL'),A=g('f_kA');return{abw:L*A/1e6,len:L};}
+  var L=g('f_L'),A=g('f_A'),B=g('f_B'),C=g('f_C');return{abw:L*(A+B+C)/1e6,len:L};
+}
+function getRate(){
+  var mat=el('f_mat').value,e=el('f_ecke').value;
+  if(mat==='flat')return{r:g('s_rfl'),m:g('s_mfl')};
+  if(mat==='1.5mm')return{r:e==='versch'?g('s_r15v'):g('s_r15o'),m:g('s_m15')};
+  return{r:e==='versch'?g('s_r1v'):g('s_r1o'),m:g('s_m1')};
+}
+function recalc(){
+  var aw=getAW(),rt=getRate();
+  var ekB=Math.max(rt.m,aw.abw*rt.r);
+  var ka=g('f_ka'),asE=g('f_asE'),asK=g('f_asK'),sw2=g('f_sw'),sau=g('f_sau');
+  var kaC=ka*(aw.len/1000)*g('s_ka'),asEC=asE*g('s_ausE'),asKC=asK*g('s_ausK'),swC=sw2*g('s_sw');
+  var ekG=ekB+kaC+asEC+asKC+swC+sau;
+  var sil=g('f_sil'),vkm=ekG*(1+g('s_zul')/100);
+  var silE=sil*g('s_sil'),aufm=g('s_aufm'),mE=g('s_mh')*g('s_std'),ges=vkm+silE+aufm+mE;
+
+  // Live hints
+  el('abwVal').textContent=aw.abw.toFixed(4)+' m\u00B2';
+  el('h_ka').textContent=ka>0?ka+' Kantung'+(ka!==1?'en':'')+' \u00B7 '+fe(kaC):'\u2013';
+  el('h_as').textContent=(asE+asK)>0?(asE+asK)+' Ausschn. \u00B7 '+fe(asEC+asKC):'\u2013';
+  el('h_sw').textContent=sw2>0?sw2+' Naht \u00B7 '+fe(swC):'\u2013';
+
+  // Result fields
+  var matTx=el('f_mat').options[el('f_mat').selectedIndex].text;
+  var eckTx=el('f_ecke').options[el('f_ecke').selectedIndex].text;
+  var proj=el('f_proj').value||'KPC GmbH',name=el('f_name').value||'Blende';
+  el('r_proj').textContent=proj+' \u00B7 '+name;
+  el('r_date').textContent='Erstellt: '+new Date().toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'});
+  el('r_desc').innerHTML='<strong>Profil:</strong> '+profile+' &nbsp;&middot;&nbsp; <strong>Material:</strong> '+matTx+' &nbsp;&middot;&nbsp; <strong>Ecken:</strong> '+eckTx+' &nbsp;&middot;&nbsp; <strong>Abwicklung:</strong> '+aw.abw.toFixed(4)+' m\u00B2 &nbsp;&middot;&nbsp; <strong>Kantungen:</strong> '+ka+' &nbsp;&middot;&nbsp; <strong>Ausschnitte:</strong> '+(asE+asK);
+  el('r_zul').textContent=g('s_zul').toFixed(0);el('r_silLfm').textContent=sil.toFixed(1);
+  el('r_abw').textContent=aw.abw.toFixed(4)+' m\u00B2';
+  el('r_ekBase').textContent=fe(ekB)+(ekB<=rt.m+.01?' \u2190 Mindest':'');
+  el('r_ekG').textContent=fe(ekG);el('r_vkm').textContent=fe(vkm);
+  el('r_silE').textContent=fe(silE);el('r_aufm').textContent=fe(aufm);el('r_mont').textContent=fe(mE);
+  el('r_ges').textContent=fe(ges);el('r_brut').textContent=fe(ges*1.19);
+
+  function setRL(lid,ltid,ltxt,vid,val){var e2=el(lid);if(!e2)return;e2.classList.toggle('hidden',val<=0.005);if(ltid)el(ltid).textContent=ltxt;if(vid)el(vid).textContent=fe(val);}
+  setRL('rl_ka','rt_ka',ka+' Kantung'+(ka!==1?'en':''),'r_ka',kaC);
+  setRL('rl_asE','rt_asE',asE+' Ausschn. einfach','r_asE',asEC);
+  setRL('rl_asK','rt_asK',asK+' Ausschn. komplex','r_asK',asKC);
+  setRL('rl_sw','rt_sw',sw2+' Schwei\u00DFnaht','r_sw',swC);
+  setRL('rl_sau',null,null,'r_sau',sau);
+
+  drawBV();
+}
+
+// ══════════════════════════════════════════════════════════
+// BLENDE PREVIEW CANVAS (step 2)
+// ══════════════════════════════════════════════════════════
+function drawBV(){
+  var c=el('bvCanvas');if(!c)return;
+  var ctx=c.getContext('2d');
+  var dpr=window.devicePixelRatio||1;
+  var W=c.parentElement.clientWidth||300,H=180;
+  c.style.width=W+'px';c.style.height=H+'px';
+  c.width=W*dpr;c.height=H*dpr;
+  ctx.setTransform(1,0,0,1,0,0);ctx.scale(dpr,dpr);
+  ctx.clearRect(0,0,W,H);
+
+  var aw=getAW(),L=aw.len,A=g('f_A'),B=g('f_B'),C=g('f_C');
+  var kA=g('f_kA'),kL=g('f_kL');
+  var maxD=profile==='K'?Math.max(kL,kA,100):Math.max(L,A+B+C,100);
+  var sc=Math.min((W-80)/maxD,(H-60)/maxD*1.5);
+  var col='#1a4480';
+
+  // Draw cross-section (left third)
+  ctx.save();ctx.translate(50,H/2+10);
+  drawCS(ctx,col,sc,A,B,C,kA);
+  ctx.restore();
+
+  // Draw isometric view (right 2/3)
+  ctx.save();ctx.translate(W*.42,H/2+10);
+  drawISO(ctx,col,sc,L,A,B,C,kA,kL,W*.55,H-40);
+  ctx.restore();
+
+  // Labels
+  ctx.font='600 10px "Roboto Condensed",sans-serif';
+  ctx.fillStyle='#8a7d72';ctx.textAlign='center';
+  ctx.fillText('Querschnitt',50,H-4);
+  ctx.fillText('Ansicht',W*.42+(W*.55)/2,H-4);
+
+  // Title
+  ctx.font='700 12px "Roboto Condensed",sans-serif';ctx.fillStyle='#2d2926';ctx.textAlign='left';
+  var matTx=el('f_mat').options[el('f_mat').selectedIndex].text;
+  ctx.fillText(profile+'-Profil \u00B7 '+matTx,6,14);
+
+  var info='Abwicklung: '+aw.abw.toFixed(4)+' m\u00B2';
+  el('bvInfo').textContent=info;
+}
+
+function drawCS(ctx,c,sc,A,B,Cv,kA){
+  ctx.strokeStyle=c;ctx.lineWidth=2.5;ctx.lineCap='round';ctx.lineJoin='round';
+  var aPx=Math.max(16,A*sc),bPx=Math.max(16,B*sc),cPx=Math.max(12,Cv*sc),kPx=Math.max(24,kA*sc*.5);
+  if(profile==='L'){ctx.beginPath();ctx.moveTo(0,-aPx);ctx.lineTo(0,0);ctx.lineTo(bPx,0);ctx.stroke();dimL(ctx,c,-14,-aPx,-14,0,'A:'+A);dimL(ctx,c,0,14,bPx,14,'B:'+B);}
+  else if(profile==='U'){ctx.beginPath();ctx.moveTo(0,-aPx);ctx.lineTo(0,0);ctx.lineTo(bPx,0);ctx.lineTo(bPx,-cPx);ctx.stroke();dimL(ctx,c,-14,-aPx,-14,0,'A:'+A);dimL(ctx,c,0,14,bPx,14,'B:'+B);dimL(ctx,c,bPx+14,0,bPx+14,-cPx,'C:'+Cv);}
+  else if(profile==='Z'){ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(aPx,0);ctx.lineTo(bPx,-cPx);ctx.lineTo(bPx+aPx,-cPx);ctx.stroke();dimL(ctx,c,0,-12,aPx,-12,'A:'+A);dimL(ctx,c,bPx+aPx+12,0,bPx+aPx+12,-cPx,'C:'+Cv);}
+  else{ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(0,-kPx*.7);ctx.lineTo(kPx*.4,-kPx*.7);ctx.lineTo(kPx*.4,-kPx*.3);ctx.lineTo(kPx,-kPx*.3);ctx.lineTo(kPx,0);ctx.closePath();ctx.stroke();dimL(ctx,c,0,14,kPx,14,'Abw:'+kA);}
+}
+function dimL(ctx,c,x1,y1,x2,y2,lbl){
+  ctx.save();ctx.strokeStyle='#6b5040';ctx.fillStyle='#6b5040';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
+  var dx=x2-x1,dy=y2-y1,len=Math.sqrt(dx*dx+dy*dy)||1;
+  var nx=-dy/len*3,ny=dx/len*3;
+  ctx.beginPath();ctx.moveTo(x1-nx,y1-ny);ctx.lineTo(x1+nx,y1+ny);ctx.moveTo(x2-nx,y2-ny);ctx.lineTo(x2+nx,y2+ny);ctx.stroke();
+  ctx.font='600 9px "Roboto Condensed",sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillStyle='rgba(255,254,248,.9)';var tw=ctx.measureText(lbl).width;ctx.fillRect((x1+x2)/2-tw/2-2,(y1+y2)/2-5,tw+4,10);
+  ctx.fillStyle='#6b5040';ctx.fillText(lbl,(x1+x2)/2,(y1+y2)/2);
+  ctx.restore();
+}
+function drawISO(ctx,c,sc,L,A,B,Cv,kA,kL,maxW,maxH){
+  var lPx=Math.min(maxW*.8,Math.max(40,L*sc*.4)),cPx=Math.max(16,Math.min(maxH*.5,(A+B+Cv||kA||60)*sc*.25));
+  var dep=cPx*.4,dax=dep*.6,day=-dep*.5;
+  ctx.strokeStyle=c;ctx.fillStyle='rgba(26,68,128,.08)';ctx.lineWidth=1.5;ctx.lineCap='round';ctx.lineJoin='round';
+  // Front
+  ctx.strokeRect(0,-cPx,lPx,cPx);
+  // Top
+  ctx.beginPath();ctx.moveTo(0,-cPx);ctx.lineTo(dax,-cPx+day);ctx.lineTo(lPx+dax,-cPx+day);ctx.lineTo(lPx,-cPx);ctx.stroke();
+  // Right
+  ctx.beginPath();ctx.moveTo(lPx,-cPx);ctx.lineTo(lPx+dax,-cPx+day);ctx.lineTo(lPx+dax,day);ctx.lineTo(lPx,0);ctx.stroke();
+  // Hidden
+  ctx.save();ctx.setLineDash([3,3]);ctx.strokeStyle='rgba(26,68,128,.3)';
+  ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(dax,day);ctx.lineTo(lPx+dax,day);ctx.stroke();ctx.restore();
+  // Length dimension
+  if(L>0){dimL(ctx,c,0,16,lPx,16,'L: '+L+' mm');}
+}
+
+// ══════════════════════════════════════════════════════════
+// PASTE (desktop)
+// ══════════════════════════════════════════════════════════
+document.addEventListener('paste',function(e){
+  var tag=document.activeElement?document.activeElement.tagName:'';
+  if(tag==='INPUT'||tag==='TEXTAREA')return;
+  var items=Array.from(e.clipboardData?e.clipboardData.items:[]);
+  var item=items.find(function(i){return i.type.startsWith('image/');});
+  if(!item)return;
+  e.preventDefault();
+  selMethod('file');loadFile(item.getAsFile());
+  toast('\u1F4CB Screenshot eingef\u00FCgt');
+});
+
+// ══════════════════════════════════════════════════════════
+// MAPPE - Project-based with selection & edit
+// ══════════════════════════════════════════════════════════
+
+// Data structure: projects = [{id, name, items:[{id, ...}]}]
+var projects = JSON.parse(localStorage.getItem('kpc_projects')||'null');
+if(!projects||!projects.length){
+  // Migrate old flat mappe to default project
+  var oldMappe = JSON.parse(localStorage.getItem('kpc_mappe')||'[]');
+  projects = [{id:'p_default',name:'Standard',items:oldMappe}];
+  if(oldMappe.length){
+    localStorage.removeItem('kpc_mappe');
+  }
+}
+var currentProjectId = localStorage.getItem('kpc_currentProj')||projects[0].id;
+if(!projects.find(function(p){return p.id===currentProjectId;}))currentProjectId=projects[0].id;
+
+var editingItemId = null;  // when editing existing position
+var selectedIds = {};       // {itemId: true}
+
+function saveProjects(){
+  localStorage.setItem('kpc_projects',JSON.stringify(projects));
+  localStorage.setItem('kpc_currentProj',currentProjectId);
+  updBadge();
+}
+
+function getCurrentProj(){
+  return projects.find(function(p){return p.id===currentProjectId;})||projects[0];
+}
+
+function totalItemsCount(){
+  return projects.reduce(function(s,p){return s+p.items.length;},0);
+}
+
+function updBadge(){
+  var n=totalItemsCount(),b=el('mapBadge');
+  b.textContent=n;b.style.display=n?'block':'none';
+}
+
+function selectedItems(){
+  var p=getCurrentProj();
+  return p.items.filter(function(it){return selectedIds[it.id];});
+}
+
+function selectedNetto(){
+  return selectedItems().reduce(function(s,i){return s+i.einzel*i.qty;},0);
+}
+
+function snap(){
+  var aw=getAW(),rt=getRate();
+  var ekB=Math.max(rt.m,aw.abw*rt.r);
+  var ka=g('f_ka'),asE=g('f_asE'),asK=g('f_asK'),sw2=g('f_sw'),sau=g('f_sau');
+  var ekG=ekB+ka*(aw.len/1000)*g('s_ka')+asE*g('s_ausE')+asK*g('s_ausK')+sw2*g('s_sw')+sau;
+  var sil=g('f_sil'),ges=ekG*(1+g('s_zul')/100)+sil*g('s_sil')+g('s_aufm')+g('s_mh')*g('s_std');
+  var matTx=el('f_mat').options[el('f_mat').selectedIndex].text;
+  var eckTx=el('f_ecke').options[el('f_ecke').selectedIndex].text;
+  var L=profile==='K'?g('f_kL'):g('f_L'),A=g('f_A'),B=g('f_B'),C=g('f_C'),kA=g('f_kA');
+  var dims=profile==='K'?(L+'mm L \u00D7 '+kA+'mm Abw'):('L='+L+' A='+A+' B='+B+(C?' C='+C:''));
+  return{
+    proj:el('f_proj').value||'',
+    name:el('f_name').value||'Blende',
+    profile:profile,
+    desc:profile+'-Profil \u00B7 '+matTx+' \u00B7 '+eckTx,
+    dims:dims,
+    qty:1,einzel:ges,
+    // Save full state for editing
+    state:{
+      profile:profile,
+      mat:el('f_mat').value,ecke:el('f_ecke').value,
+      L:g('f_L'),A:g('f_A'),B:g('f_B'),C:g('f_C'),
+      kL:g('f_kL'),kA:g('f_kA'),
+      sil:g('f_sil'),ka:g('f_ka'),asE:g('f_asE'),asK:g('f_asK'),sw:g('f_sw'),sau:g('f_sau')
+    }
+  };
+}
+
+function addToMappe(){
+  var aw=getAW();
+  if(aw.abw<=0){alert('Bitte Ma\u00DFe eintragen.');return;}
+  var p=getCurrentProj();
+  var data=snap();
+  if(editingItemId){
+    // Update existing
+    var idx=p.items.findIndex(function(it){return it.id===editingItemId;});
+    if(idx>=0){
+      data.id=editingItemId;
+      data.qty=p.items[idx].qty;  // preserve qty
+      p.items[idx]=data;
+      saveProjects();
+      toast('\u2713 Position aktualisiert');
+      editingItemId=null;
+      resetForNext();
+      return;
+    }
+  }
+  // Add new
+  data.id='it_'+Date.now()+'_'+Math.floor(Math.random()*999);
+  p.items.push(data);
+  saveProjects();
+  toast('\u2713 Pos. '+p.items.length+' in '+p.name+' \u00B7 '+fe(p.items.reduce(function(s,i){return s+i.einzel*i.qty;},0)));
+  resetForNext();
+}
+
+function resetForNext(){
+  imgB64=null;isPDF=false;clearFile();
+  el('aiAlertBox').classList.add('hidden');
+  el('f_name').value='';
+  ['f_L','f_A','f_B','f_C','f_kL','f_kA'].forEach(function(id){el(id).value=0;});
+  el('f_asE').value=0;el('f_asK').value=0;el('f_sw').value=0;setSau(0);
+  document.querySelectorAll('.ai-tag').forEach(function(e){e.classList.add('hidden');});
+  selProfile('L');selMethod('photo');
+  editingItemId=null;
+  updEditBanner();
+  gotoStep(1);
+}
+
+function openMappe(){
+  selectedIds={};
+  // Pre-select all items in current project
+  getCurrentProj().items.forEach(function(it){selectedIds[it.id]=true;});
+  renderProjectTabs();
+  renderMappe();
+  el('mapModal').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeMappe(){
+  el('mapModal').classList.remove('open');
+  document.body.style.overflow='';
+}
+
+function renderProjectTabs(){
+  var c=el('projTabs');c.innerHTML='';
+  projects.forEach(function(p){
+    var t=document.createElement('div');
+    t.className='proj-tab'+(p.id===currentProjectId?' act':'');
+    t.innerHTML=esc(p.name)+' <span class="pcount">'+p.items.length+'</span>';
+    t.onclick=function(){
+      currentProjectId=p.id;
+      saveProjects();
+      selectedIds={};
+      getCurrentProj().items.forEach(function(it){selectedIds[it.id]=true;});
+      renderProjectTabs();renderMappe();
+    };
+    c.appendChild(t);
+  });
+}
+
+function addProject(){
+  var name=el('newProjName').value.trim();
+  if(!name){el('newProjName').focus();return;}
+  var id='p_'+Date.now();
+  projects.push({id:id,name:name,items:[]});
+  currentProjectId=id;
+  el('newProjName').value='';
+  selectedIds={};
+  saveProjects();
+  renderProjectTabs();renderMappe();
+}
+
+function deleteCurrentProject(){
+  if(projects.length<=1){alert('Mindestens ein Projekt muss bestehen bleiben.');return;}
+  var p=getCurrentProj();
+  if(!confirm('Projekt "'+p.name+'" mit '+p.items.length+' Position(en) wirklich l\u00F6schen?'))return;
+  projects=projects.filter(function(x){return x.id!==currentProjectId;});
+  currentProjectId=projects[0].id;
+  selectedIds={};
+  saveProjects();
+  renderProjectTabs();renderMappe();
+}
+
+function renderMappe(){
+  var p=getCurrentProj();
+  el('mapModalTitle').textContent='Projekt: '+p.name;
+
+  if(!p.items.length){
+    el('mapEmpty').classList.remove('hidden');
+    el('mapList').classList.add('hidden');
+    return;
+  }
+  el('mapEmpty').classList.add('hidden');
+  el('mapList').classList.remove('hidden');
+
+  var html='';
+  p.items.forEach(function(it,i){
+    var ef=de2(it.einzel)+' \u20AC';
+    var gf=de2(it.einzel*it.qty)+' \u20AC';
+    var checked=selectedIds[it.id]?'checked':'';
+    html+='<div class="mi">'
+      +'<input type="checkbox" class="mi-chk" '+checked+' onchange="toggleItemSel(\''+it.id+'\',this.checked)">'
+      +'<div class="mi-pos">'+(i+1)+'</div>'
+      +'<div class="mi-info">'
+        +'<div class="mi-bez">'+esc(it.name)+'</div>'
+        +'<div class="mi-desc">'+esc(it.desc)+'<br>'+esc(it.dims)+'</div>'
+        +'<div class="mi-row">'
+          +'<div class="qty">'
+            +'<button onclick="chQty(\''+it.id+'\',-1)">&minus;</button>'
+            +'<input type="number" min="1" value="'+it.qty+'" onchange="setQty(\''+it.id+'\',this.value)">'
+            +'<button onclick="chQty(\''+it.id+'\',1)">+</button>'
+          +'</div>'
+          +'<span style="font-size:11px;color:var(--mu)">\u00D7 '+ef+' =</span>'
+          +'<span class="mi-pr">'+gf+'</span>'
+        +'</div>'
+      +'</div>'
+      +'<div class="mi-actions">'
+        +'<button class="mi-edit" onclick="editItem(\''+it.id+'\')" title="Bearbeiten">&#9998;</button>'
+        +'<button class="mi-del" onclick="delItem(\''+it.id+'\')" title="L\u00F6schen">&#x1F5D1;</button>'
+      +'</div>'
+    +'</div>';
+  });
+  el('mapItems').innerHTML=html;
+  updateSelInfo();
+}
+
+function toggleSelAll(){
+  var allChecked=el('selAllChk').checked;
+  var p=getCurrentProj();
+  p.items.forEach(function(it){selectedIds[it.id]=allChecked;});
+  // Update UI checkboxes
+  document.querySelectorAll('.mi-chk').forEach(function(cb){cb.checked=allChecked;});
+  updateSelInfo();
+}
+
+function toggleItemSel(id,checked){
+  selectedIds[id]=checked;
+  updateSelInfo();
+}
+
+function updateSelInfo(){
+  var p=getCurrentProj();
+  var total=p.items.length;
+  var selCount=p.items.filter(function(it){return selectedIds[it.id];}).length;
+  var n=selectedNetto();
+  el('selInfo').textContent=selCount+'/'+total+' ausgew\u00E4hlt';
+  el('selAllChk').checked=(selCount===total&&total>0);
+  el('selAllChk').indeterminate=(selCount>0&&selCount<total);
+  el('mapNetto').textContent=fe(n);
+  el('mapMwst').textContent=fe(n*.19);
+  el('mapBrutto').textContent=fe(n*1.19);
+  el('selSummeLbl').textContent=selCount===total?'Summe (alle '+total+' Pos.)':'Summe ('+selCount+' von '+total+' Pos.)';
+  // Disable angebot button if nothing selected
+  var btn=el('agBtn');
+  btn.disabled=(selCount===0);
+  btn.style.opacity=selCount===0?'.5':'1';
+}
+
+function chQty(id,d){
+  var p=getCurrentProj();
+  var it=p.items.find(function(x){return x.id===id;});
+  if(it){it.qty=Math.max(1,it.qty+d);saveProjects();renderMappe();}
+}
+function setQty(id,v){
+  var p=getCurrentProj();
+  var n=Math.max(1,parseInt(v)||1);
+  var it=p.items.find(function(x){return x.id===id;});
+  if(it){it.qty=n;saveProjects();renderMappe();}
+}
+function delItem(id){
+  if(!confirm('Position entfernen?'))return;
+  var p=getCurrentProj();
+  p.items=p.items.filter(function(x){return x.id!==id;});
+  delete selectedIds[id];
+  saveProjects();renderMappe();
+}
+function deleteSelected(){
+  var sel=selectedItems();
+  if(!sel.length){alert('Keine Positionen ausgew\u00E4hlt.');return;}
+  if(!confirm(sel.length+' ausgew\u00E4hlte Position(en) l\u00F6schen?'))return;
+  var p=getCurrentProj();
+  p.items=p.items.filter(function(x){return!selectedIds[x.id];});
+  selectedIds={};
+  saveProjects();renderMappe();
+}
+
+function editItem(id){
+  var p=getCurrentProj();
+  var it=p.items.find(function(x){return x.id===id;});
+  if(!it||!it.state){alert('Position kann nicht bearbeitet werden (alte Daten).');return;}
+  closeMappe();
+  // Restore state
+  var s=it.state;
+  el('f_proj').value=it.proj||'';
+  el('f_name').value=it.name||'';
+  el('f_mat').value=s.mat;el('f_ecke').value=s.ecke;
+  el('f_L').value=s.L;el('f_A').value=s.A;el('f_B').value=s.B;el('f_C').value=s.C;
+  el('f_kL').value=s.kL;el('f_kA').value=s.kA;
+  el('f_sil').value=s.sil;
+  el('f_ka').value=s.ka;el('f_asE').value=s.asE;el('f_asK').value=s.asK;
+  el('f_sw').value=s.sw;el('f_sau').value=s.sau||0;
+  if(s.sau===0||!s.sau)setSau(0);else if(s.sau===20)setSau(20);else if(s.sau===50)setSau(50);else setSauM();
+  el('f_sau').value=s.sau||0;
+  selProfile(s.profile);
+  editingItemId=id;
+  updEditBanner();
+  recalc();
+  gotoStep(2);
+}
+
+function updEditBanner(){
+  var b=el('editBanner'),lbl=el('addMappeLbl');
+  if(!b||!lbl)return;
+  if(editingItemId){
+    b.classList.remove('hidden');
+    lbl.textContent='Speichern (Position aktualisieren)';
+  } else {
+    b.classList.add('hidden');
+    lbl.textContent='In Mappe + neue Blende';
+  }
+}
+
+function clearMappe(){/* legacy - not used */}
+
+// ══════════════════════════════════════════════════════════
+// ANGEBOT
+// ══════════════════════════════════════════════════════════
+function prefillAg(netto){
+  el('ag_netto').textContent=de2(netto)+' \u20AC';
+  el('ag_mwst').textContent=de2(netto*.19)+' \u20AC';
+  el('ag_brutto').textContent=de2(netto*1.19)+' \u20AC';
+  var today=new Date(),guel=new Date(today);guel.setDate(guel.getDate()+30);
+  var fmt=function(d){return d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'});};
+  if(!el('ag_dat').value)el('ag_dat').value=fmt(today);
+  if(!el('ag_guel').value)el('ag_guel').value=fmt(guel);
+  if(!el('ag_nr').value)el('ag_nr').value='AN-'+today.getFullYear()+'-'+String(Math.floor(Math.random()*900)+100);
+  el('agModal').classList.add('open');document.body.style.overflow='hidden';
+}
+function openAngebotDirekt(){
+  agMode='single';
+  var raw=el('r_ges').textContent.replace(/\./g,'').replace(',','.').replace(/[^0-9.]/g,'');
+  var ges=parseFloat(raw)||0;
+  if(!el('ag_bez').value)el('ag_bez').value=el('r_proj').textContent||'';
+  prefillAg(ges);
+}
+function openAngebotMappe(){
+  var items=selectedItems();
+  if(!items.length){alert('Bitte mindestens eine Position ausw\u00E4hlen.');return;}
+  agMode='mappe';closeMappe();
+  var p=getCurrentProj();
+  if(!el('ag_bez').value)el('ag_bez').value=p.name+' \u2014 Edelstahlblenden ('+items.length+' Pos.)';
+  prefillAg(selectedNetto());
+}
+function closeAg(){el('agModal').classList.remove('open');document.body.style.overflow='';agMode='single';}
+
+function buildRows(){
+  if(agMode==='mappe'){
+    var items=selectedItems();
+    if(items.length){
+      return items.map(function(it,i){
+        var ef=de2(it.einzel)+' \u20AC',gf=de2(it.einzel*it.qty)+' \u20AC';
+        return '<tr><td style="vertical-align:top">'+(i+1)+'</td>'
+          +'<td style="vertical-align:top">'+esc(it.name)+'<br><span style="font-size:9pt;color:#8a7d72">'+esc(it.desc)+' \u00B7 '+esc(it.dims)+'</span></td>'
+          +'<td class="c" style="vertical-align:top">'+it.qty+' Stk.</td>'
+          +'<td class="r" style="vertical-align:top">'+ef+'</td>'
+          +'<td class="r" style="vertical-align:top">'+gf+'</td></tr>';
+      }).join('');
+    }
+  }
+  var n=el('ag_netto').textContent;
+  var bez=el('ag_bez').value||'Lieferung und Montage CNS-Blende';
+  return '<tr><td>1</td><td>'+bez+'</td><td class="c">1 Stk.</td><td class="r">'+n+'</td><td class="r">'+n+'</td></tr>';
+}
+
+function buildAgHTML(){
+  var v=function(id){return el(id)?el(id).value||'':'';};
+  var tv=function(id){return el(id)?el(id).textContent||'':'';};
+  var firma=v('ag_firma')||'Kunde',ansp=v('ag_ansp'),str=v('ag_str'),ort=v('ag_ort');
+  var nr=v('ag_nr'),dat=v('ag_dat'),guel=v('ag_guel');
+  var bez=v('ag_bez')||'CNS-Edelstahlblenden';
+  var txt=v('ag_text'),netto=tv('ag_netto'),mwst=tv('ag_mwst'),brutto=tv('ag_brutto');
+  var empf='<div style="font-size:13pt;font-weight:700">'+firma+'</div>';
+  if(ansp)empf+=ansp+'<br>';if(str)empf+=str+'<br>';if(ort)empf+=ort;
+  return '<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><title>Angebot '+nr+'</title>'
+    +'<style>body{font-family:Arial,sans-serif;color:#2d2926;padding:16mm 18mm;font-size:12pt;margin:0}'
+    +'.top{display:flex;justify-content:space-between;margin-bottom:18px;padding-bottom:12px;border-bottom:3px solid #2d2926}'
+    +'.logo{display:grid;grid-template-columns:1fr 1fr;gap:2px;width:42px;height:28px;margin-right:10px}'
+    +'.logo span{background:#c4a46b;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;color:#2d2926}'
+    +'.logo span:nth-child(even){background:#c0a070}'
+    +'.empf{background:#f8f4ef;border-left:4px solid #c4a46b;padding:10px 14px;margin-bottom:16px;border-radius:3px;font-size:11pt;line-height:1.7}'
+    +'table{width:100%;border-collapse:collapse;margin:12px 0}th{background:#2d2926;color:#fff;padding:7px 10px;font-size:9.5pt}th:last-child{text-align:right}'
+    +'td{padding:8px 10px;border-bottom:1px solid #e8e0d8;font-size:11pt}td.r{text-align:right;font-weight:500}td.c{text-align:center}'
+    +'tr.sub td{color:#8a7d72;font-size:10pt}tr.tot td{font-size:13pt;font-weight:700;border-top:2px solid #2d2926;border-bottom:none}tr.tot td.r{color:#256641;font-size:15pt}'
+    +'@media print{body{padding:8mm 12mm}@page{size:A4;margin:0}}</style></head><body>'
+    +'<div class="top"><div style="display:flex;align-items:center">'
+    +'<div class="logo"><span>k</span><span>p</span><span>c</span><span>&nbsp;</span></div>'
+    +'<div><strong style="font-size:14pt">KPC GmbH</strong><br><span style="font-size:9pt;color:#6b5040">Haimbacher Stra\u00DFe 27 \u00B7 36041 Fulda</span></div></div>'
+    +'<div style="text-align:right;line-height:1.8"><strong style="font-size:14pt;display:block">ANGEBOT</strong>'
+    +'<span style="font-size:10pt;color:#8a7d72">Nr. '+nr+'<br>'+dat+'<br>G\u00FCltig bis: '+guel+'</span></div></div>'
+    +'<div class="empf">'+empf+'</div>'
+    +'<div style="font-size:13pt;font-weight:700;margin:12px 0 6px">'+bez+'</div>'
+    +(txt?'<p style="font-size:11pt;color:#4a3f38;line-height:1.7;margin-bottom:16px">'+txt+'</p>':'')
+    +'<table><tr><th style="width:42px">Pos.</th><th>Leistung</th>'
+    +'<th style="width:70px;text-align:center">Menge</th><th style="width:110px;text-align:right">Einzelpreis</th><th style="width:120px;text-align:right">Gesamt</th></tr>'
+    +buildRows()
+    +'<tr class="sub"><td colspan="4" style="text-align:right">Summe netto</td><td class="r">'+netto+'</td></tr>'
+    +'<tr class="sub"><td colspan="4" style="text-align:right">zzgl. 19% MwSt.</td><td class="r">'+mwst+'</td></tr>'
+    +'<tr class="tot"><td colspan="4">Gesamtbetrag</td><td class="r">'+brutto+'</td></tr></table>'
+    +'<div style="margin-top:16px;font-size:9pt;color:#8a7d72;border-top:1px solid #ddd;padding-top:8px;line-height:1.7">'
+    +'Zahlung: 14 Tage netto \u00B7 G\u00FCltigkeit: bis '+guel+'</div>'
+    +'<div style="margin-top:18px;font-size:8pt;color:#bbb;border-top:1px solid #eee;padding-top:5px;display:flex;justify-content:space-between">'
+    +'<span>KPC GmbH \u00B7 36041 Fulda</span><span>Angebot '+nr+' \u00B7 '+dat+'</span></div>'
+    +'<scr'+'ipt>window.onload=function(){window.print();};<'+'/scr'+'ipt></body></html>';
+}
+
+function dlBlob(c,fn){var b=new Blob([c],{type:'text/html;charset=utf-8'});var u=URL.createObjectURL(b);var a=document.createElement('a');a.href=u;a.download=fn;document.body.appendChild(a);a.click();document.body.removeChild(a);setTimeout(function(){URL.revokeObjectURL(u);},3e3);}
+
+function dlAngebot(){var nr=el('ag_nr').value||'',firma=el('ag_firma').value||'Kunde';dlBlob(buildAgHTML(),'KPC_Angebot_'+nr+'_'+firma.replace(/[^a-zA-Z0-9]/g,'_').slice(0,25)+'.html');}
+function mailAngebot(){
+  var mail=el('ag_mail').value.trim();
+  if(!mail||mail.indexOf('@')<0){alert('Bitte E-Mail-Adresse eingeben.');return;}
+  var nr=el('ag_nr').value||'',bez=el('ag_bez').value||'Blenden',brutto=el('ag_brutto').textContent||'';
+  var subj='Angebot '+nr+' \u2013 KPC GmbH';
+  var body='Sehr geehrte Damen und Herren,\n\nanbei finden Sie unser Angebot Nr. '+nr+' f\u00FCr: '+bez+'.\n\nGesamtbetrag: '+brutto+' inkl. MwSt.\n\nMit freundlichen Gr\u00FC\u00DFen\nKPC GmbH\nHaimbacher Stra\u00DFe 27\n36041 Fulda';
+  dlAngebot();
+  setTimeout(function(){window.location.href='mailto:'+encodeURIComponent(mail)+'?subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(body);},600);
+}
+
+// ══════════════════════════════════════════════════════════
+// DOWNLOAD KALKULATION
+// ══════════════════════════════════════════════════════════
+function dlKalk(){
+  var proj=el('r_proj').textContent||'Kalkulation';
+  var t=function(id){return el(id)?el(id).textContent:'';};
+  var extras='';
+  ['rl_ka','rl_asE','rl_asK','rl_sw','rl_sau'].forEach(function(id){
+    var e=el(id);if(e&&!e.classList.contains('hidden')){
+      var s=e.querySelectorAll('span');
+      extras+='<tr class="sub"><td>'+(s[0]?s[0].textContent:'')+'</td><td>'+( s[1]?s[1].textContent:'')+'</td></tr>';
+    }
+  });
+  var doc='<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><title>KPC Kalkulation</title>'
+    +'<style>body{font-family:Arial,sans-serif;color:#2d2926;padding:16mm 18mm;font-size:12pt;margin:0}'
+    +'.logo{display:grid;grid-template-columns:1fr 1fr;gap:2px;width:42px;height:28px;margin-right:10px}'
+    +'.logo span{background:#c4a46b;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;color:#2d2926}'
+    +'.logo span:nth-child(even){background:#c0a070}'
+    +'.desc{background:#f0e5d0;border:1px solid #c4a46b;border-radius:4px;padding:9px 12px;font-size:10pt;margin:10px 0;line-height:1.6}'
+    +'table{width:100%;border-collapse:collapse;margin:10px 0}th{background:#2d2926;color:#fff;padding:6px 10px;font-size:9pt}th:last-child{text-align:right}'
+    +'td{padding:6px 10px;border-bottom:1px solid #e8e0d8;font-size:11pt}td:last-child{text-align:right}'
+    +'tr.sub td{background:#faf6f0;font-size:10pt;color:#6b5040}tr.tek td{font-weight:700;border-top:2px solid #c4a46b}'
+    +'tr.sep td{border-bottom:2px solid #2d2926}tr.tot td{font-size:14pt;font-weight:700}tr.tot td:last-child{color:#256641;font-size:15pt}'
+    +'tr.brut td{font-size:10pt;color:#8a7d72;border-bottom:none}'
+    +'@media print{body{padding:8mm 12mm}@page{size:A4;margin:0}}</style></head><body>'
+    +'<div style="display:flex;justify-content:space-between;margin-bottom:16px;padding-bottom:10px;border-bottom:3px solid #2d2926">'
+    +'<div style="display:flex;align-items:center"><div class="logo"><span>k</span><span>p</span><span>c</span><span>&nbsp;</span></div>'
+    +'<div><strong style="font-size:14pt">KPC GmbH</strong><br><span style="font-size:9pt;color:#6b5040">Blenden-Kalkulation</span></div></div>'
+    +'<div style="text-align:right;font-size:10pt;color:#8a7d72">'+t('r_date')+'</div></div>'
+    +'<div style="font-size:14pt;font-weight:700;margin-bottom:5px">'+proj+'</div>'
+    +'<div class="desc">'+el('r_desc').innerHTML+'</div>'
+    +'<table><tr><th colspan="2">EK-Aufschl\u00FCsselung</th></tr>'
+    +'<tr class="sub"><td>Abwicklungsfl\u00E4che</td><td>'+t('r_abw')+'</td></tr>'
+    +'<tr class="sub"><td>Material EK-Basis</td><td>'+t('r_ekBase')+'</td></tr>'
+    +extras+'<tr class="tek"><td>EK gesamt</td><td>'+t('r_ekG')+'</td></tr></table>'
+    +'<table><tr><th colspan="2">VK-Kalkulation</th></tr>'
+    +'<tr class="sep"><td>EK + Zuschlag ('+t('r_zul')+'%)</td><td>'+t('r_vkm')+'</td></tr>'
+    +'<tr><td>Silikon ('+t('r_silLfm')+' lfm)</td><td>'+t('r_silE')+'</td></tr>'
+    +'<tr><td>Aufma\u00DF</td><td>'+t('r_aufm')+'</td></tr>'
+    +'<tr class="sep"><td>Montage</td><td>'+t('r_mont')+'</td></tr>'
+    +'<tr class="tot"><td>VK netto</td><td>'+t('r_ges')+'</td></tr>'
+    +'<tr class="brut"><td>inkl. 19% MwSt.</td><td>'+t('r_brut')+'</td></tr></table>'
+    +'<div style="margin-top:16px;font-size:8pt;color:#bbb;border-top:1px solid #eee;padding-top:5px;display:flex;justify-content:space-between">'
+    +'<span>KPC GmbH \u00B7 36041 Fulda</span><span>Alle Preise netto zzgl. MwSt.</span></div>'
+    +'<scr'+'ipt>window.onload=function(){window.print();};<'+'/scr'+'ipt></body></html>';
+  dlBlob(doc,'KPC_Kalkulation_'+proj.replace(/[^a-zA-Z0-9]/g,'_').slice(0,40)+'.html');
+}
+
+// ══════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════
+buildProfileGrid();
+selProfile('L');
+recalc();
+updBadge();
+if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js').catch(function(){});
+</script>
+</body>
+</html>
