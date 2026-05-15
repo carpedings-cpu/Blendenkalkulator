@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Bim Boo Malen</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; }
+html, body { width: 100%; height: 100%; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; touch-action: none; overscroll-behavior: none; }
+body { background: linear-gradient(135deg, #ffd5e5 0%, #d5c5ff 50%, #c5e5ff 100%); }
+
+/* ── GALLERY ── */
+#galerie {
+  position: fixed; inset: 0; padding: 20px; overflow-y: auto;
+  display: flex; flex-direction: column; align-items: center;
+  -webkit-overflow-scrolling: touch;
+  background: linear-gradient(135deg, #ffd5e5 0%, #d5c5ff 50%, #c5e5ff 100%);
+}
+#galerie.hidden { display: none; }
+
+.app-icon {
+  width: 100px; height: 100px; border-radius: 24px;
+  box-shadow: 0 8px 24px rgba(107,58,140,.25);
+  font-size: 64px; display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, #fff5fb, #f0e5ff);
+}
+#galerie h1 {
+  font-size: 38px; color: #6b3a8c; margin: 6px 0 14px;
+  text-shadow: 2px 2px 0 #fff; font-weight: 800;
+}
+
+.neu-btn {
+  width: 100%; max-width: 420px; padding: 18px;
+  background: linear-gradient(135deg, #ff79a8, #c97de8);
+  border: none; border-radius: 20px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 12px;
+  box-shadow: 0 6px 20px rgba(201,125,232,.4); margin-bottom: 20px;
+}
+.neu-btn:active { opacity: .85; }
+.neu-btn .icon { font-size: 32px; }
+.neu-btn strong { font-size: 20px; font-weight: 800; color: #fff; text-shadow: 1px 1px 0 rgba(0,0,0,.15); }
+
+.galerie-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px;
+  width: 100%; max-width: 420px; padding-bottom: 20px;
+}
+.galerie-item {
+  background: #fff; border-radius: 16px; overflow: hidden;
+  box-shadow: 0 4px 14px rgba(107,58,140,.15); cursor: pointer; position: relative;
+  aspect-ratio: 4/3;
+}
+.galerie-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.galerie-del {
+  position: absolute; top: 6px; right: 6px; width: 28px; height: 28px;
+  background: rgba(255,60,60,.85); border: none; border-radius: 50%; color: #fff;
+  font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,.2);
+}
+.galerie-del:active { background: rgba(200,20,20,.9); }
+.galerie-leer {
+  color: #a07ab8; font-size: 15px; text-align: center; padding: 30px 20px;
+  background: rgba(255,255,255,.5); border-radius: 16px; max-width: 420px; width: 100%;
+}
+.galerie-leer span { font-size: 48px; display: block; margin-bottom: 10px; }
+
+/* ── DRAWING SCREEN ── */
+#mal-screen {
+  position: fixed; inset: 0; display: flex; flex-direction: column;
+  background: #fffdf8;
+}
+#mal-screen.hidden { display: none; }
+
+.mal-hdr {
+  display: flex; align-items: center; gap: 8px; padding: 10px 12px;
+  background: linear-gradient(90deg, #c97de8, #7f9de8);
+  flex-shrink: 0; box-shadow: 0 2px 10px rgba(107,58,140,.25);
+}
+.mal-hdr h2 { flex: 1; font-size: 17px; font-weight: 800; color: #fff; text-shadow: 1px 1px 0 rgba(0,0,0,.15); }
+.hdr-btn {
+  background: rgba(255,255,255,.25); border: 2px solid rgba(255,255,255,.4); color: #fff;
+  border-radius: 12px; padding: 8px 14px; font-size: 14px; font-weight: 700; cursor: pointer;
+}
+.hdr-btn:active { background: rgba(255,255,255,.4); }
+
+#zeichenflaeche {
+  flex: 1; display: block; width: 100%; touch-action: none; cursor: crosshair;
+  background: #fffdf8;
+}
+
+.mal-tools {
+  display: flex; align-items: center; gap: 7px; padding: 9px 12px;
+  background: #fff; flex-shrink: 0; overflow-x: auto; scrollbar-width: none;
+  border-top: 2px solid #f0e0ff;
+}
+.mal-tools::-webkit-scrollbar { display: none; }
+
+.farbe {
+  width: 34px; height: 34px; border-radius: 50%; border: 3px solid transparent;
+  cursor: pointer; flex-shrink: 0;
+}
+.farbe.aktiv { border-color: #6b3a8c; box-shadow: 0 0 0 2px rgba(107,58,140,.3); }
+.farbe:active { opacity: .7; }
+
+.tool-sep { width: 1px; height: 28px; background: #e0d0ee; flex-shrink: 0; margin: 0 1px; }
+
+.stift-btn {
+  width: 38px; height: 38px; border-radius: 10px; border: 2px solid #e0d0ee;
+  background: #faf0ff; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.stift-btn.aktiv { border-color: #6b3a8c; background: #f0e0ff; }
+.stift-btn:active { background: #e8d0ff; }
+.stift-kreis { border-radius: 50%; background: #333; flex-shrink: 0; }
+
+.sonder-btn {
+  width: 38px; height: 38px; border-radius: 10px; border: 2px solid #e0d0ee;
+  background: #faf0ff; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  font-size: 20px; flex-shrink: 0;
+}
+.sonder-btn.aktiv { border-color: #6b3a8c; background: #f0e0ff; }
+.sonder-btn:active { background: #e8d0ff; }
+
+.clear-btn {
+  width: 38px; height: 38px; border-radius: 10px; border: 2px solid #ffe0e0;
+  background: #fff5f5; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  font-size: 20px; flex-shrink: 0;
+}
+.clear-btn:active { background: #ffe0e0; }
+
+.save-btn {
+  padding: 9px 14px; border-radius: 12px; border: none;
+  background: linear-gradient(135deg, #ff79a8, #c97de8);
+  color: #fff; font-size: 13px; font-weight: 800; cursor: pointer;
+  box-shadow: 0 3px 10px rgba(201,125,232,.35); flex-shrink: 0;
+}
+.save-btn:active { opacity: .85; }
+
+/* Toast */
+.toast {
+  position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
+  background: rgba(107,58,140,.92); color: #fff; padding: 11px 22px; border-radius: 20px;
+  font-size: 14px; font-weight: 700; pointer-events: none; opacity: 0;
+  transition: opacity .25s; z-index: 999; white-space: nowrap;
+}
+.toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<!-- ══ GALLERY ══ -->
+<div id="galerie">
+  <div class="app-icon">🎨</div>
+  <h1>Bim Boo Malen</h1>
+
+  <button class="neu-btn" onclick="neuesMalbuch()">
+    <span class="icon">✏️</span>
+    <strong>Neu malen</strong>
+  </button>
+
+  <div class="galerie-grid" id="galerieGrid"></div>
+</div>
+
+<!-- ══ DRAWING SCREEN ══ -->
+<div id="mal-screen" class="hidden">
+  <div class="mal-hdr">
+    <button class="hdr-btn" onclick="zurueckZurGalerie()">← Galerie</button>
+    <h2>Bim Boo Malen 🎨</h2>
+    <button class="save-btn" onclick="speichern()">💾 Speichern</button>
+  </div>
+
+  <canvas id="zeichenflaeche"></canvas>
+
+  <div class="mal-tools">
+    <!-- Colors -->
+    <div class="farbe aktiv" style="background:#e53935" data-farbe="#e53935" onclick="setFarbe(this)"></div>
+    <div class="farbe" style="background:#fb8c00" data-farbe="#fb8c00" onclick="setFarbe(this)"></div>
+    <div class="farbe" style="background:#fdd835" data-farbe="#fdd835" onclick="setFarbe(this)"></div>
+    <div class="farbe" style="background:#43a047" data-farbe="#43a047" onclick="setFarbe(this)"></div>
+    <div class="farbe" style="background:#1e88e5" data-farbe="#1e88e5" onclick="setFarbe(this)"></div>
+    <div class="farbe" style="background:#8e24aa" data-farbe="#8e24aa" onclick="setFarbe(this)"></div>
+    <div class="farbe" style="background:#f06292" data-farbe="#f06292" onclick="setFarbe(this)"></div>
+    <div class="farbe" style="background:#00acc1" data-farbe="#00acc1" onclick="setFarbe(this)"></div>
+    <div class="farbe" style="background:#6d4c41" data-farbe="#6d4c41" onclick="setFarbe(this)"></div>
+    <div class="farbe" style="background:#212121" data-farbe="#212121" onclick="setFarbe(this)"></div>
+    <div class="farbe" style="background:#ffffff; border: 3px solid #e0c0f0" data-farbe="#ffffff" onclick="setFarbe(this)"></div>
+
+    <div class="tool-sep"></div>
+
+    <!-- Brush sizes -->
+    <button class="stift-btn" onclick="setGroesse(this,4)" title="Dünn">
+      <div class="stift-kreis" style="width:6px;height:6px"></div>
+    </button>
+    <button class="stift-btn aktiv" onclick="setGroesse(this,10)" title="Mittel">
+      <div class="stift-kreis" style="width:13px;height:13px"></div>
+    </button>
+    <button class="stift-btn" onclick="setGroesse(this,22)" title="Dick">
+      <div class="stift-kreis" style="width:20px;height:20px"></div>
+    </button>
+    <button class="stift-btn" onclick="setGroesse(this,44)" title="Extra-dick">
+      <div class="stift-kreis" style="width:28px;height:28px"></div>
+    </button>
+
+    <div class="tool-sep"></div>
+
+    <!-- Special tools -->
+    <button class="sonder-btn" id="radiererBtn" onclick="toggleRadierer()" title="Radierer">🧹</button>
+    <button class="clear-btn" onclick="allesLoeschen()" title="Alles löschen">🗑️</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var STORAGE = 'bimboo_v1';
+var aktuelleId = null;
+var farbe = '#e53935';
+var groesse = 10;
+var radierer = false;
+var zeichnen = false;
+var canvasBound = false;
+
+var canvas, ctx;
+
+// ── Canvas ──
+function initCanvas() {
+  canvas = document.getElementById('zeichenflaeche');
+  var hdr = document.querySelector('.mal-hdr');
+  var tools = document.querySelector('.mal-tools');
+  var h = window.innerHeight - hdr.offsetHeight - tools.offsetHeight;
+  canvas.width = window.innerWidth;
+  canvas.height = Math.max(h, 200);
+  ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#fffdf8';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+}
+
+function getPos(e) {
+  var r = canvas.getBoundingClientRect();
+  var s = e.touches ? e.touches[0] : e;
+  return { x: (s.clientX - r.left) * (canvas.width / r.width), y: (s.clientY - r.top) * (canvas.height / r.height) };
+}
+
+function onStart(e) {
+  e.preventDefault();
+  zeichnen = true;
+  var p = getPos(e);
+  ctx.beginPath();
+  ctx.moveTo(p.x, p.y);
+  // Draw a dot for single tap
+  ctx.fillStyle = radierer ? '#fffdf8' : farbe;
+  ctx.beginPath();
+  ctx.arc(p.x, p.y, (radierer ? groesse * 1.5 : groesse) / 2, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(p.x, p.y);
+}
+
+function onMove(e) {
+  if (!zeichnen) return;
+  e.preventDefault();
+  var p = getPos(e);
+  ctx.strokeStyle = radierer ? '#fffdf8' : farbe;
+  ctx.lineWidth = radierer ? groesse * 1.5 : groesse;
+  ctx.lineTo(p.x, p.y);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(p.x, p.y);
+}
+
+function onEnd(e) {
+  zeichnen = false;
+  if (ctx) ctx.beginPath();
+}
+
+function bindCanvas() {
+  if (canvasBound) return;
+  canvasBound = true;
+  canvas.addEventListener('mousedown', onStart);
+  canvas.addEventListener('mousemove', onMove);
+  window.addEventListener('mouseup', onEnd);
+  canvas.addEventListener('touchstart', onStart, { passive: false });
+  canvas.addEventListener('touchmove', onMove, { passive: false });
+  window.addEventListener('touchend', onEnd);
+  window.addEventListener('touchcancel', onEnd);
+}
+
+// ── Tools ──
+function setFarbe(el) {
+  document.querySelectorAll('.farbe').forEach(function(f) { f.classList.remove('aktiv'); });
+  el.classList.add('aktiv');
+  farbe = el.dataset.farbe;
+  radierer = false;
+  document.getElementById('radiererBtn').classList.remove('aktiv');
+}
+
+function setGroesse(btn, g) {
+  document.querySelectorAll('.stift-btn').forEach(function(b) { b.classList.remove('aktiv'); });
+  btn.classList.add('aktiv');
+  groesse = g;
+}
+
+function toggleRadierer() {
+  radierer = !radierer;
+  document.getElementById('radiererBtn').classList.toggle('aktiv', radierer);
+}
+
+function allesLoeschen() {
+  if (!confirm('Alles löschen?')) return;
+  ctx.fillStyle = '#fffdf8';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+}
+
+// ── Storage ──
+function ladeGalerie() {
+  try { return JSON.parse(localStorage.getItem(STORAGE) || '[]'); } catch(e) { return []; }
+}
+
+function speichereGalerie(items) {
+  try { localStorage.setItem(STORAGE, JSON.stringify(items)); }
+  catch(e) { toast('Speicher voll – bitte Bilder löschen'); }
+}
+
+function speichern() {
+  var data = canvas.toDataURL('image/jpeg', 0.85);
+  var galerie = ladeGalerie();
+  var now = Date.now();
+  if (aktuelleId !== null) {
+    var idx = galerie.findIndex(function(i) { return i.id === aktuelleId; });
+    if (idx >= 0) { galerie[idx].bild = data; galerie[idx].ts = now; }
+    else { galerie.unshift({ id: aktuelleId, bild: data, ts: now }); }
+  } else {
+    aktuelleId = now;
+    galerie.unshift({ id: aktuelleId, bild: data, ts: now });
+  }
+  speichereGalerie(galerie);
+  toast('Bild gespeichert! 🎉');
+}
+
+// ── Gallery ──
+function renderGalerie() {
+  var grid = document.getElementById('galerieGrid');
+  var galerie = ladeGalerie();
+  grid.innerHTML = '';
+  if (galerie.length === 0) {
+    grid.innerHTML = '<div class="galerie-leer" style="grid-column:1/-1"><span>🖼️</span>Noch keine Bilder –<br>fang jetzt an zu malen!</div>';
+    return;
+  }
+  galerie.forEach(function(item) {
+    var div = document.createElement('div');
+    div.className = 'galerie-item';
+    var img = document.createElement('img');
+    img.src = item.bild;
+    img.alt = 'Bild';
+    img.onclick = function() { oeffneBild(item.id); };
+    var del = document.createElement('button');
+    del.className = 'galerie-del';
+    del.textContent = '✕';
+    del.onclick = function(e) { e.stopPropagation(); loescheBild(item.id); };
+    div.appendChild(img);
+    div.appendChild(del);
+    grid.appendChild(div);
+  });
+}
+
+function loescheBild(id) {
+  if (!confirm('Dieses Bild löschen?')) return;
+  speichereGalerie(ladeGalerie().filter(function(i) { return i.id !== id; }));
+  renderGalerie();
+}
+
+// ── Navigation ──
+function zeigeScreen(id) {
+  document.getElementById('galerie').classList.toggle('hidden', id !== 'galerie');
+  document.getElementById('mal-screen').classList.toggle('hidden', id !== 'mal-screen');
+}
+
+function neuesMalbuch() {
+  aktuelleId = null;
+  zeigeScreen('mal-screen');
+  setTimeout(function() {
+    initCanvas();
+    bindCanvas();
+  }, 30);
+}
+
+function oeffneBild(id) {
+  aktuelleId = id;
+  var item = ladeGalerie().find(function(i) { return i.id === id; });
+  if (!item) return;
+  zeigeScreen('mal-screen');
+  setTimeout(function() {
+    initCanvas();
+    bindCanvas();
+    var img = new Image();
+    img.onload = function() {
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    };
+    img.src = item.bild;
+  }, 30);
+}
+
+function zurueckZurGalerie() {
+  zeigeScreen('galerie');
+  renderGalerie();
+}
+
+// ── Toast ──
+var toastTimer;
+function toast(msg) {
+  var el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function() { el.classList.remove('show'); }, 2200);
+}
+
+// ── Init ──
+renderGalerie();
+</script>
+</body>
+</html>
